@@ -1,0 +1,60 @@
+{
+  "ir_version": "1.0",
+  "project": "omnivoice",
+  "repository": "https://github.com/agentplexus/omnivoice",
+  "versioning": "semver",
+  "commit_convention": "conventional",
+  "maintainers": ["grokify", "johncwang@gmail.com"],
+  "releases": [
+    {
+      "version": "v0.2.0",
+      "date": "2026-01-18",
+      "highlights": [
+        { "description": "Audio codec package with PCM, mu-law, and a-law support for telephony" },
+        { "description": "MCP server enabling Claude Code to make voice calls" },
+        { "description": "Pipeline components connecting STT, TTS, and transport providers" }
+      ],
+      "added": [
+        { "description": "Audio codec package with PCM sample conversions (int16, float32, float64, bytes)", "commit": "f64fe1e" },
+        { "description": "Mu-law encoding/decoding for Twilio Media Streams", "commit": "f64fe1e" },
+        { "description": "A-law encoding/decoding for international telephony", "commit": "f64fe1e" },
+        { "description": "Audio resampling, normalization, and analysis utilities", "commit": "f64fe1e" },
+        { "description": "MCP server with stdio transport for voice interactions", "commit": "721cbac" },
+        { "description": "Voice interaction tools: `initiate_call`, `continue_call`, `speak_to_user`, `end_call`", "commit": "721cbac" },
+        { "description": "Session management for tracking active voice calls", "commit": "721cbac" },
+        { "description": "TTSPipeline for streaming TTS output to transport connections", "commit": "11c906d" },
+        { "description": "StreamingTTSPipeline for connecting streaming LLM text to TTS to transport", "commit": "11c906d" },
+        { "description": "STTPipeline for streaming audio from transport to STT with event callbacks", "commit": "11c906d" }
+      ],
+      "documentation": [
+        { "description": "Voice integration PRD outlining goals, user stories, and success metrics", "commit": "fd86611" },
+        { "description": "Twilio integration TRD detailing Media Streams architecture", "commit": "fd86611" }
+      ],
+      "tests": [
+        { "description": "Comprehensive unit tests for audio codec functions (mu-law, a-law, PCM)", "commit": "f64fe1e" }
+      ]
+    },
+    {
+      "version": "v0.1.0",
+      "date": "2025-12-28",
+      "highlights": [
+        { "description": "Initial OmniVoice voice abstraction layer for multi-provider telephony" }
+      ],
+      "added": [
+        { "description": "Voice abstraction layer with provider-agnostic interfaces", "commit": "8a54bc2" },
+        { "description": "STT (speech-to-text) provider interface with streaming support", "commit": "8a54bc2" },
+        { "description": "TTS (text-to-speech) provider interface with streaming support", "commit": "8a54bc2" },
+        { "description": "Transport interface for audio connections (Twilio, Zoom, etc.)", "commit": "8a54bc2" },
+        { "description": "Export `CallOptions` for provider implementations", "commit": "7e1b52d" }
+      ],
+      "documentation": [
+        { "description": "README with project overview and shields", "commit": "4f298df" },
+        { "description": "Marp presentation for OmniVoice", "commit": "d2d67cf" }
+      ],
+      "build": [
+        { "description": "GitHub Actions CI workflow", "commit": "4bad35d" },
+        { "description": "golangci-lint configuration and fixes", "commit": "3693297" }
+      ]
+    }
+  ]
+}
