@@ -1,0 +1,54 @@
+site_name: OmniVoice
+site_url: https://agentplexus.github.io/omnivoice/
+site_description: Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents
+site_author: AgentPlexus
+
+repo_name: agentplexus/omnivoice
+repo_url: https://github.com/agentplexus/omnivoice
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Design:
+      - Voice Integration PRD: voice-integration-prd.md
+      - Twilio Integration TRD: twilio-integration-trd.md
+      - Provider Conformance Testing: provider-conformance-testing.md
+  - Roadmap: roadmap.md
+  - Changelog: changelog.md
+  - Releases:
+      - v0.3.0: releases/v0.3.0.md
+      - v0.2.0: releases/v0.2.0.md
+      - v0.1.0: releases/v0.1.0.md
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - toc:
+      permalink: true
