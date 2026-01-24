@@ -18,8 +18,14 @@
         { "description": "STT provider conformance test suite with interface, behavior, and integration tests", "commit": "69cfd20" },
         { "description": "Mock STT provider with streaming transcription simulation", "commit": "69cfd20" }
       ],
+      "fixed": [
+        { "description": "MCP session and tool handlers now log `Close()` errors instead of discarding", "commit": "6099072" }
+      ],
       "documentation": [
         { "description": "Provider conformance testing TRD describing test categories and API design", "commit": "58a9697" }
+      ],
+      "build": [
+        { "description": "MIT LICENSE file", "commit": "f124dcf" }
       ]
     },
     {
