@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -104,7 +105,9 @@ func (m *SessionManager) CreateSession(ctx context.Context) (*Session, error) {
 
 	writer, events, err := m.config.STT.TranscribeStream(sessionCtx, sttConfig)
 	if err != nil {
-		_ = conn.Close()
+		if closeErr := conn.Close(); closeErr != nil {
+			slog.ErrorContext(ctx, "failed to close connection during cleanup", "error", closeErr)
+		}
 		cancel()
 		return nil, fmt.Errorf("failed to start STT: %w", err)
 	}

@@ -3,6 +3,7 @@ package mcp
 import (
 	"context"
 	"fmt"
+	"log/slog"
 )
 
 // Tool definitions
@@ -137,7 +138,9 @@ func (h *ToolHandler) initiateCall(ctx context.Context, args map[string]any) Cal
 	// Speak and listen for response
 	response, err := session.SpeakAndListen(ctx, message, h.config.TranscriptTimeoutMs)
 	if err != nil {
-		_ = session.Close()
+		if closeErr := session.Close(); closeErr != nil {
+			slog.ErrorContext(ctx, "failed to close session during cleanup", "error", closeErr)
+		}
 		h.sessions.RemoveSession(session.ID)
 		return CallToolResult{
 			Content: []ContentBlock{TextContent(fmt.Sprintf("Call failed: %v", err))},
@@ -272,7 +275,9 @@ func (h *ToolHandler) endCall(ctx context.Context, args map[string]any) CallTool
 	duration := session.Duration()
 
 	// Close session
-	_ = session.Close()
+	if closeErr := session.Close(); closeErr != nil {
+		slog.ErrorContext(ctx, "failed to close session", "error", closeErr)
+	}
 	h.sessions.RemoveSession(callID)
 
 	return CallToolResult{
