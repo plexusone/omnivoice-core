@@ -7,6 +7,22 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.3.0",
+      "date": "2026-01-24",
+      "highlights": [
+        { "description": "Provider conformance test suites for TTS and STT implementations" }
+      ],
+      "added": [
+        { "description": "TTS provider conformance test suite with interface, behavior, and integration tests", "commit": "e3705c7" },
+        { "description": "Mock TTS provider for self-testing with configurable audio format responses", "commit": "e3705c7" },
+        { "description": "STT provider conformance test suite with interface, behavior, and integration tests", "commit": "69cfd20" },
+        { "description": "Mock STT provider with streaming transcription simulation", "commit": "69cfd20" }
+      ],
+      "documentation": [
+        { "description": "Provider conformance testing TRD describing test categories and API design", "commit": "58a9697" }
+      ]
+    },
+    {
       "version": "v0.2.0",
       "date": "2026-01-18",
       "highlights": [
