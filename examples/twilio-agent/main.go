@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -76,7 +77,12 @@ func handleInboundCall(w http.ResponseWriter, r *http.Request) {
 	to := r.FormValue("To")
 	callSID := r.FormValue("CallSid")
 
-	log.Printf("Incoming call: %s -> %s (SID: %s)", from, to, callSID)
+	// Sanitize values before logging to prevent log injection via newlines
+	safeFrom := strings.ReplaceAll(strings.ReplaceAll(from, "\n", ""), "\r", "")
+	safeTo := strings.ReplaceAll(strings.ReplaceAll(to, "\n", ""), "\r", "")
+	safeCallSID := strings.ReplaceAll(strings.ReplaceAll(callSID, "\n", ""), "\r", "")
+
+	log.Printf("Incoming call: %s -> %s (SID: %s)", safeFrom, safeTo, safeCallSID)
 
 	// Return TwiML connecting to ConversationRelay
 	// This tells Twilio to open a WebSocket to our agent
