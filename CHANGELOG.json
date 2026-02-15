@@ -1,11 +1,33 @@
 {
-  "ir_version": "1.0",
+  "irVersion": "1.0",
   "project": "omnivoice",
   "repository": "https://github.com/agentplexus/omnivoice",
   "versioning": "semver",
-  "commit_convention": "conventional",
+  "commitConvention": "conventional",
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
+    {
+      "version": "v0.4.0",
+      "date": "2026-02-14",
+      "highlights": [
+        { "description": "Subtitle generation from STT transcription results" },
+        { "description": "Extensible config maps for provider-specific settings" }
+      ],
+      "added": [
+        { "description": "Subtitle package for SRT/VTT generation from transcription results", "commit": "17730a7" },
+        { "description": "Configurable max characters per line and lines per cue for subtitles", "commit": "17730a7" },
+        { "description": "Word-level timestamp-based cue splitting", "commit": "17730a7" },
+        { "description": "Extensions map in TranscriptionConfig for provider-specific STT settings", "commit": "84c37f5" },
+        { "description": "Extensions map in SynthesisConfig for provider-specific TTS settings", "commit": "665c3be" }
+      ],
+      "tests": [
+        { "description": "Provider conformance testing utilities for call system providers", "commit": "9683ca2" },
+        { "description": "Provider conformance testing utilities for transport providers", "commit": "9683ca2" }
+      ],
+      "documentation": [
+        { "description": "Voice cloning guide with recording tips and phonetically balanced text", "commit": "1f0cdd8" }
+      ]
+    },
     {
       "version": "v0.3.0",
       "date": "2026-01-24",
