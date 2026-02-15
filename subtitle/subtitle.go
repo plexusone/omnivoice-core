@@ -243,7 +243,7 @@ func formatVTTTime(d time.Duration) string {
 // Note: maxLines is advisory - we never drop words. If text exceeds maxLines,
 // we continue wrapping rather than clipping, as dropped words appear as quality
 // problems to viewers.
-func wrapText(text string, maxCharsPerLine, maxLines int) string {
+func wrapText(text string, maxCharsPerLine, _ int) string {
 	if maxCharsPerLine <= 0 {
 		maxCharsPerLine = 42
 	}
