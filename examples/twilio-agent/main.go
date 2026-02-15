@@ -127,7 +127,8 @@ func handleCallStatus(w http.ResponseWriter, r *http.Request) {
 // This is where the voice agent receives and sends audio.
 func handleAgentWebSocket(w http.ResponseWriter, r *http.Request) {
 	callSID := r.URL.Query().Get("callSid")
-	log.Printf("Agent WebSocket connected for call: %s", callSID)
+	safeCallSID := strings.ReplaceAll(strings.ReplaceAll(callSID, "\n", ""), "\r", "")
+	log.Printf("Agent WebSocket connected for call: %s", safeCallSID)
 
 	// TODO: Implement WebSocket handling with OmniVoice
 	//
