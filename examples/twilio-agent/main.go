@@ -115,7 +115,11 @@ func handleCallStatus(w http.ResponseWriter, r *http.Request) {
 	callSID := r.FormValue("CallSid")
 	status := r.FormValue("CallStatus")
 
-	log.Printf("Call status update: %s -> %s", callSID, status)
+	// Sanitize values before logging to prevent log injection via newlines
+	safeCallSID := strings.ReplaceAll(strings.ReplaceAll(callSID, "\n", ""), "\r", "")
+	safeStatus := strings.ReplaceAll(strings.ReplaceAll(status, "\n", ""), "\r", "")
+
+	log.Printf("Call status update: %s -> %s", safeCallSID, safeStatus)
 	w.WriteHeader(http.StatusOK)
 }
 
