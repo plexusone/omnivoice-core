@@ -56,6 +56,14 @@ type Config struct {
 	// Defaults to reasonable values if not specified.
 	TestAudioConfig stt.TranscriptionConfig
 
+	// TestAudioFile is a path to an audio file for TranscribeFile tests.
+	// If empty, TranscribeFile test is skipped.
+	TestAudioFile string
+
+	// TestAudioURL is a URL to an audio file for TranscribeURL tests.
+	// If empty, TranscribeURL test is skipped.
+	TestAudioURL string
+
 	// Timeout for individual test operations.
 	// Defaults to 30 seconds if zero.
 	Timeout time.Duration
@@ -137,6 +145,12 @@ func RunIntegrationTests(t *testing.T, cfg Config) {
 		t.Skip("integration tests skipped")
 	}
 	t.Run("Transcribe", func(t *testing.T) { testTranscribe(t, cfg) })
+	if cfg.TestAudioFile != "" {
+		t.Run("TranscribeFile", func(t *testing.T) { testTranscribeFile(t, cfg) })
+	}
+	if cfg.TestAudioURL != "" {
+		t.Run("TranscribeURL", func(t *testing.T) { testTranscribeURL(t, cfg) })
+	}
 	if cfg.StreamingProvider != nil {
 		t.Run("TranscribeStream", func(t *testing.T) { testTranscribeStream(t, cfg) })
 	}
@@ -228,6 +242,62 @@ func testTranscribe(t *testing.T, cfg Config) {
 	}
 
 	t.Logf("Transcribe() returned: %q", result.Text)
+}
+
+func testTranscribeFile(t *testing.T, cfg Config) {
+	t.Helper()
+	if cfg.TestAudioFile == "" {
+		t.Skip("TestAudioFile not configured")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
+	defer cancel()
+
+	result, err := cfg.Provider.TranscribeFile(ctx, cfg.TestAudioFile, cfg.TestAudioConfig)
+	if err != nil {
+		t.Fatalf("TranscribeFile() error: %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("TranscribeFile() returned nil result")
+	}
+
+	// Check for expected text if specified
+	if cfg.TestExpectedText != "" {
+		if !strings.Contains(strings.ToLower(result.Text), strings.ToLower(cfg.TestExpectedText)) {
+			t.Errorf("TranscribeFile() text %q does not contain expected %q", result.Text, cfg.TestExpectedText)
+		}
+	}
+
+	t.Logf("TranscribeFile() returned: %q", result.Text)
+}
+
+func testTranscribeURL(t *testing.T, cfg Config) {
+	t.Helper()
+	if cfg.TestAudioURL == "" {
+		t.Skip("TestAudioURL not configured")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
+	defer cancel()
+
+	result, err := cfg.Provider.TranscribeURL(ctx, cfg.TestAudioURL, cfg.TestAudioConfig)
+	if err != nil {
+		t.Fatalf("TranscribeURL() error: %v", err)
+	}
+
+	if result == nil {
+		t.Fatal("TranscribeURL() returned nil result")
+	}
+
+	// Check for expected text if specified
+	if cfg.TestExpectedText != "" {
+		if !strings.Contains(strings.ToLower(result.Text), strings.ToLower(cfg.TestExpectedText)) {
+			t.Errorf("TranscribeURL() text %q does not contain expected %q", result.Text, cfg.TestExpectedText)
+		}
+	}
+
+	t.Logf("TranscribeURL() returned: %q", result.Text)
 }
 
 func testTranscribeStream(t *testing.T, cfg Config) {
