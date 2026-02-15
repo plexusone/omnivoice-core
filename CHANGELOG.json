@@ -7,6 +7,17 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.4.1",
+      "date": "2026-02-14",
+      "highlights": [
+        { "description": "STT conformance tests for batch transcription methods" }
+      ],
+      "tests": [
+        { "description": "TranscribeFile conformance test for local file transcription", "commit": "c441944" },
+        { "description": "TranscribeURL conformance test for remote URL transcription", "commit": "c441944" }
+      ]
+    },
+    {
       "version": "v0.4.0",
       "date": "2026-02-14",
       "highlights": [
