@@ -52,6 +52,11 @@ type SynthesisConfig struct {
 
 	// SimilarityBoost enhances voice similarity (0.0 to 1.0, provider-specific).
 	SimilarityBoost float64
+
+	// Extensions holds provider-specific settings.
+	// Keys should be namespaced by provider (e.g., "elevenlabs.style", "deepgram.tier").
+	// Use provider-specific helper functions for type-safe access.
+	Extensions map[string]any
 }
 
 // SynthesisResult contains the result of a TTS synthesis.
