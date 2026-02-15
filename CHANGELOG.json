@@ -10,7 +10,7 @@
       "version": "v0.4.1",
       "date": "2026-02-14",
       "highlights": [
-        { "description": "STT conformance tests for batch transcription methods" }
+        { "description": "STT conformance tests for `TranscribeFile` and `TranscribeURL` batch transcription methods" }
       ],
       "tests": [
         { "description": "TranscribeFile conformance test for local file transcription", "commit": "c441944" },
@@ -49,9 +49,9 @@
         { "description": "Provider conformance test suites for TTS and STT implementations" }
       ],
       "added": [
-        { "description": "TTS provider conformance test suite with interface, behavior, and integration tests", "commit": "e3705c7" },
+        { "description": "TTS provider conformance test suite (`Synthesize`, `SynthesizeStream`, `SynthesizeFromReader`)", "commit": "e3705c7" },
         { "description": "Mock TTS provider for self-testing with configurable audio format responses", "commit": "e3705c7" },
-        { "description": "STT provider conformance test suite with interface, behavior, and integration tests", "commit": "69cfd20" },
+        { "description": "STT provider conformance test suite (`Transcribe`, `TranscribeStream`)", "commit": "69cfd20" },
         { "description": "Mock STT provider with streaming transcription simulation", "commit": "69cfd20" }
       ],
       "fixed": [
