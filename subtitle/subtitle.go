@@ -239,14 +239,15 @@ func formatVTTTime(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d:%02d.%03d", h, m, s, ms)
 }
 
-// wrapText wraps text to fit within character and line limits.
+// wrapText wraps text to fit within character limits per line.
+// Note: maxLines is advisory - we never drop words. If text exceeds maxLines,
+// we continue wrapping rather than clipping, as dropped words appear as quality
+// problems to viewers.
 func wrapText(text string, maxCharsPerLine, maxLines int) string {
 	if maxCharsPerLine <= 0 {
 		maxCharsPerLine = 42
 	}
-	if maxLines <= 0 {
-		maxLines = 2
-	}
+	// maxLines is kept for API compatibility but not used for clipping
 
 	words := strings.Fields(text)
 	if len(words) == 0 {
@@ -266,13 +267,10 @@ func wrapText(text string, maxCharsPerLine, maxLines int) string {
 			lines = append(lines, currentLine.String())
 			currentLine.Reset()
 			currentLine.WriteString(word)
-			if len(lines) >= maxLines {
-				break
-			}
 		}
 	}
 
-	if currentLine.Len() > 0 && len(lines) < maxLines {
+	if currentLine.Len() > 0 {
 		lines = append(lines, currentLine.String())
 	}
 

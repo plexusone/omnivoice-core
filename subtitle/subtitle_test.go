@@ -120,7 +120,8 @@ func TestWrapText(t *testing.T) {
 		expected        string
 	}{
 		{"Hello world", 42, 2, "Hello world"},
-		{"Hello world this is a test", 10, 2, "Hello\nworld this"},
+		// Note: wrapText no longer clips to maxLines - it wraps all words to avoid dropping content
+		{"Hello world this is a test", 10, 2, "Hello\nworld this\nis a test"},
 		{"Short", 42, 2, "Short"},
 		{"", 42, 2, ""},
 	}
