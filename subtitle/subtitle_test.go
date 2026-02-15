@@ -219,3 +219,154 @@ func TestSpeakerLabels(t *testing.T) {
 		t.Error("VTT with speaker labels should contain voice tag")
 	}
 }
+
+func TestWordsToSubtitleCues_EnglishWordGrouping(t *testing.T) {
+	// Tests basic English word grouping: words are space-separated and all
+	// words should be preserved in output cues.
+	words := []stt.Word{
+		{Text: "The", StartTime: 0, EndTime: 200 * time.Millisecond},
+		{Text: "quick", StartTime: 200 * time.Millisecond, EndTime: 500 * time.Millisecond},
+		{Text: "brown", StartTime: 500 * time.Millisecond, EndTime: 800 * time.Millisecond},
+		{Text: "fox", StartTime: 800 * time.Millisecond, EndTime: 1 * time.Second},
+		{Text: "jumps", StartTime: 1 * time.Second, EndTime: 1300 * time.Millisecond},
+		{Text: "over", StartTime: 1300 * time.Millisecond, EndTime: 1600 * time.Millisecond},
+		{Text: "the", StartTime: 1600 * time.Millisecond, EndTime: 1800 * time.Millisecond},
+		{Text: "lazy", StartTime: 1800 * time.Millisecond, EndTime: 2100 * time.Millisecond},
+		{Text: "dog.", StartTime: 2100 * time.Millisecond, EndTime: 2500 * time.Millisecond},
+	}
+
+	opts := DefaultOptions()
+	cues := wordsToSubtitleCues(words, opts)
+
+	// All words should fit in a single cue (sentence is short)
+	if len(cues) != 1 {
+		t.Errorf("Expected 1 cue for short sentence, got %d", len(cues))
+	}
+
+	// Verify all words are present and space-separated
+	expectedWords := []string{"The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog."}
+	for _, word := range expectedWords {
+		if !strings.Contains(cues[0].Text, word) {
+			t.Errorf("Expected word %q to be in cue, got: %q", word, cues[0].Text)
+		}
+	}
+
+	// Verify timing spans entire input
+	if cues[0].StartTime != 0 {
+		t.Errorf("Expected start time 0, got %v", cues[0].StartTime)
+	}
+	if cues[0].EndTime != 2500*time.Millisecond {
+		t.Errorf("Expected end time 2500ms, got %v", cues[0].EndTime)
+	}
+}
+
+func TestWordsToSubtitleCues_ChineseCharacters(t *testing.T) {
+	// Tests behavior when STT returns Chinese text character-by-character
+	// (as Deepgram and some other services do). Each character is treated as
+	// a separate "word", so they get space-separated in output. External
+	// post-processing is needed to remove spaces between CJK characters.
+	//
+	// Input: "人工智能" (artificial intelligence) tokenized character-by-character
+	words := []stt.Word{
+		{Text: "人", StartTime: 0, EndTime: 200 * time.Millisecond},
+		{Text: "工", StartTime: 200 * time.Millisecond, EndTime: 400 * time.Millisecond},
+		{Text: "智", StartTime: 400 * time.Millisecond, EndTime: 600 * time.Millisecond},
+		{Text: "能", StartTime: 600 * time.Millisecond, EndTime: 800 * time.Millisecond},
+	}
+
+	opts := DefaultOptions()
+	cues := wordsToSubtitleCues(words, opts)
+
+	if len(cues) != 1 {
+		t.Errorf("Expected 1 cue, got %d", len(cues))
+	}
+
+	// Characters should be space-separated (current behavior)
+	// External post-processing removes spaces for CJK output
+	expected := "人 工 智 能"
+	if cues[0].Text != expected {
+		t.Errorf("Expected %q, got %q", expected, cues[0].Text)
+	}
+
+	// All characters should be preserved
+	for _, char := range []string{"人", "工", "智", "能"} {
+		if !strings.Contains(cues[0].Text, char) {
+			t.Errorf("Expected character %q to be in cue", char)
+		}
+	}
+}
+
+func TestWordsToSubtitleCues_MixedChineseEnglish(t *testing.T) {
+	// Tests mixed content where some words are English and some are
+	// Chinese characters. This is common in technical content.
+	//
+	// Example: "AI 技术" (AI technology)
+	words := []stt.Word{
+		{Text: "AI", StartTime: 0, EndTime: 300 * time.Millisecond},
+		{Text: "技", StartTime: 300 * time.Millisecond, EndTime: 500 * time.Millisecond},
+		{Text: "术", StartTime: 500 * time.Millisecond, EndTime: 700 * time.Millisecond},
+		{Text: "is", StartTime: 700 * time.Millisecond, EndTime: 900 * time.Millisecond},
+		{Text: "important.", StartTime: 900 * time.Millisecond, EndTime: 1300 * time.Millisecond},
+	}
+
+	opts := DefaultOptions()
+	cues := wordsToSubtitleCues(words, opts)
+
+	if len(cues) != 1 {
+		t.Errorf("Expected 1 cue, got %d", len(cues))
+	}
+
+	// All tokens should be present and space-separated
+	expected := "AI 技 术 is important."
+	if cues[0].Text != expected {
+		t.Errorf("Expected %q, got %q", expected, cues[0].Text)
+	}
+}
+
+func TestWordsToSubtitleCues_LongChineseText(t *testing.T) {
+	// Tests that long Chinese text gets properly split into multiple cues
+	// when it exceeds line limits. Each character counts as 1 char + 1 space.
+	// With MaxCharsPerLine=42, ~20 characters fit per line.
+	//
+	// Input: 25 characters "这是一段很长的中文文本用于测试字幕分割功能是否正常工作"
+	chars := []string{"这", "是", "一", "段", "很", "长", "的", "中", "文", "文",
+		"本", "用", "于", "测", "试", "字", "幕", "分", "割", "功",
+		"能", "是", "否", "正", "常", "工", "作"}
+
+	words := make([]stt.Word, len(chars))
+	for i, char := range chars {
+		words[i] = stt.Word{
+			Text:      char,
+			StartTime: time.Duration(i*100) * time.Millisecond,
+			EndTime:   time.Duration((i+1)*100) * time.Millisecond,
+		}
+	}
+
+	opts := DefaultOptions()
+	cues := wordsToSubtitleCues(words, opts)
+
+	// Should produce multiple cues due to line limits
+	if len(cues) < 2 {
+		t.Errorf("Expected multiple cues for long text, got %d", len(cues))
+	}
+
+	// No cue should exceed 2 lines
+	for i, cue := range cues {
+		lineCount := strings.Count(cue.Text, "\n") + 1
+		if lineCount > opts.MaxLinesPerCue {
+			t.Errorf("Cue %d has %d lines (max %d): %q", i, lineCount, opts.MaxLinesPerCue, cue.Text)
+		}
+	}
+
+	// All characters should be preserved across cues
+	var allText strings.Builder
+	for _, cue := range cues {
+		allText.WriteString(cue.Text)
+	}
+	combined := allText.String()
+	for _, char := range chars {
+		if !strings.Contains(combined, char) {
+			t.Errorf("Character %q missing from output", char)
+		}
+	}
+}
