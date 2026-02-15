@@ -35,9 +35,12 @@ nav:
       - Voice Integration PRD: voice-integration-prd.md
       - Twilio Integration TRD: twilio-integration-trd.md
       - Provider Conformance Testing: provider-conformance-testing.md
+  - Guides:
+      - Voice Cloning: voice-cloning.md
   - Roadmap: roadmap.md
   - Changelog: changelog.md
   - Releases:
+      - v0.4.0: releases/v0.4.0.md
       - v0.3.0: releases/v0.3.0.md
       - v0.2.0: releases/v0.2.0.md
       - v0.1.0: releases/v0.1.0.md

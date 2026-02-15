@@ -75,6 +75,9 @@ omnivoice/
 ├── audio/                  # Audio codec utilities
 │   └── codec/              # PCM, mu-law, a-law
 │
+├── subtitle/               # Subtitle generation
+│   └── subtitle.go         # SRT/VTT from transcription results
+│
 ├── mcp/                    # MCP server for voice interactions
 │   └── server.go
 │

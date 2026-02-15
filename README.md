@@ -87,6 +87,9 @@ omnivoice/
 │   ├── livekit/            # LiveKit rooms
 │   └── daily/              # Daily.co
 │
+├── subtitle/               # Subtitle generation
+│   └── subtitle.go         # SRT/VTT from transcription results
+│
 └── examples/
     ├── simple-tts/         # Basic TTS example
     ├── voice-agent/        # Voice agent with Twilio
