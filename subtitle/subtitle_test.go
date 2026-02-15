@@ -135,6 +135,65 @@ func TestWrapText(t *testing.T) {
 	}
 }
 
+func TestWordsToSubtitleCues_LineCountLimit(t *testing.T) {
+	// This test verifies that cues are split based on actual wrapped line count,
+	// not just total character count. The text "openai published a study revealing
+	// that while everyone has access to ai only a small" is ~84 chars (within the
+	// 42*2=84 char limit) but wraps to 3 lines, so "small" should start a new cue.
+	words := []stt.Word{
+		{Text: "openai", StartTime: 0, EndTime: 500 * time.Millisecond},
+		{Text: "published", StartTime: 500 * time.Millisecond, EndTime: 900 * time.Millisecond},
+		{Text: "a", StartTime: 900 * time.Millisecond, EndTime: 950 * time.Millisecond},
+		{Text: "study", StartTime: 950 * time.Millisecond, EndTime: 1200 * time.Millisecond},
+		{Text: "revealing", StartTime: 1200 * time.Millisecond, EndTime: 1600 * time.Millisecond},
+		{Text: "that", StartTime: 1600 * time.Millisecond, EndTime: 1800 * time.Millisecond},
+		{Text: "while", StartTime: 1800 * time.Millisecond, EndTime: 2000 * time.Millisecond},
+		{Text: "everyone", StartTime: 2000 * time.Millisecond, EndTime: 2400 * time.Millisecond},
+		{Text: "has", StartTime: 2400 * time.Millisecond, EndTime: 2600 * time.Millisecond},
+		{Text: "access", StartTime: 2600 * time.Millisecond, EndTime: 2900 * time.Millisecond},
+		{Text: "to", StartTime: 2900 * time.Millisecond, EndTime: 3000 * time.Millisecond},
+		{Text: "ai", StartTime: 3000 * time.Millisecond, EndTime: 3200 * time.Millisecond},
+		{Text: "only", StartTime: 3200 * time.Millisecond, EndTime: 3500 * time.Millisecond},
+		{Text: "a", StartTime: 3500 * time.Millisecond, EndTime: 3600 * time.Millisecond},
+		{Text: "small", StartTime: 3600 * time.Millisecond, EndTime: 3900 * time.Millisecond},
+		{Text: "percentage", StartTime: 3900 * time.Millisecond, EndTime: 4500 * time.Millisecond},
+	}
+
+	opts := DefaultOptions() // MaxCharsPerLine=42, MaxLinesPerCue=2
+
+	cues := wordsToSubtitleCues(words, opts)
+
+	// Verify no cue has more than 2 lines
+	for i, cue := range cues {
+		lineCount := strings.Count(cue.Text, "\n") + 1
+		if lineCount > opts.MaxLinesPerCue {
+			t.Errorf("Cue %d has %d lines (max %d): %q", i, lineCount, opts.MaxLinesPerCue, cue.Text)
+		}
+	}
+
+	// Verify "small" is in a cue (not dropped)
+	foundSmall := false
+	for _, cue := range cues {
+		if strings.Contains(cue.Text, "small") {
+			foundSmall = true
+			break
+		}
+	}
+	if !foundSmall {
+		t.Error("Word 'small' should be present in output cues")
+	}
+
+	// The first cue should end with "a" (before "small")
+	if !strings.HasSuffix(strings.TrimSpace(cues[0].Text), "a") {
+		t.Errorf("First cue should end with 'a', got: %q", cues[0].Text)
+	}
+
+	// The second cue should start with "small"
+	if !strings.HasPrefix(cues[1].Text, "small") {
+		t.Errorf("Second cue should start with 'small', got: %q", cues[1].Text)
+	}
+}
+
 func TestSpeakerLabels(t *testing.T) {
 	result := &stt.TranscriptionResult{
 		Segments: []stt.Segment{

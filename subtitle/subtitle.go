@@ -180,9 +180,11 @@ func wordsToSubtitleCues(words []stt.Word, opts Options) []subtitleCue {
 			needNewCue = true
 		}
 
-		// Text too long
+		// Text too long - check actual wrapped line count, not just total characters
 		potentialText := currentText.String() + " " + word.Text
-		if len(strings.TrimSpace(potentialText)) > opts.MaxCharsPerLine*opts.MaxLinesPerCue {
+		wrappedText := wrapText(strings.TrimSpace(potentialText), opts.MaxCharsPerLine, opts.MaxLinesPerCue)
+		lineCount := strings.Count(wrappedText, "\n") + 1
+		if lineCount > opts.MaxLinesPerCue {
 			needNewCue = true
 		}
 
