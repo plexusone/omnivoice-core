@@ -7,6 +7,32 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.4.3",
+      "date": "2026-02-15",
+      "highlights": [
+        { "description": "Comprehensive tests for English and Chinese subtitle generation" }
+      ],
+      "tests": [
+        { "description": "`TestWordsToSubtitleCues_EnglishWordGrouping` for word-based cue grouping", "commit": "0ddb8bc" },
+        { "description": "`TestWordsToSubtitleCues_ChineseCharacters` for character-by-character tokenization", "commit": "0ddb8bc" },
+        { "description": "`TestWordsToSubtitleCues_MixedChineseEnglish` for mixed language content", "commit": "0ddb8bc" },
+        { "description": "`TestWordsToSubtitleCues_LongChineseText` for multi-cue splitting", "commit": "0ddb8bc" }
+      ]
+    },
+    {
+      "version": "v0.4.2",
+      "date": "2026-02-15",
+      "highlights": [
+        { "description": "Fixed subtitle word cutoff at line boundaries" }
+      ],
+      "fixed": [
+        { "description": "Subtitle cue chunking now checks actual wrapped line count instead of total character count, preventing words from being cut off when they would appear on a third line", "commit": "a301897" }
+      ],
+      "tests": [
+        { "description": "`TestWordsToSubtitleCues_LineCountLimit` verifies cues split correctly at line boundaries", "commit": "a301897" }
+      ]
+    },
+    {
       "version": "v0.4.1",
       "date": "2026-02-14",
       "highlights": [
