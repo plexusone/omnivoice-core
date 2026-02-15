@@ -42,6 +42,11 @@ type TranscriptionConfig struct {
 
 	// VocabularyID is a provider-specific custom vocabulary ID.
 	VocabularyID string
+
+	// Extensions holds provider-specific settings.
+	// Keys should be namespaced by provider (e.g., "deepgram.tier", "elevenlabs.num_speakers").
+	// Use provider-specific helper functions for type-safe access.
+	Extensions map[string]any
 }
 
 // Word represents a single transcribed word with timing.
