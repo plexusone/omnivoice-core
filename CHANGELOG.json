@@ -13,8 +13,8 @@
         { "description": "STT conformance tests for `TranscribeFile` and `TranscribeURL` batch transcription methods" }
       ],
       "tests": [
-        { "description": "TranscribeFile conformance test for local file transcription", "commit": "c441944" },
-        { "description": "TranscribeURL conformance test for remote URL transcription", "commit": "c441944" }
+        { "description": "`TranscribeFile` conformance test for local file transcription", "commit": "c441944" },
+        { "description": "`TranscribeURL` conformance test for remote URL transcription", "commit": "c441944" }
       ]
     },
     {
@@ -28,12 +28,12 @@
         { "description": "Subtitle package for SRT/VTT generation from transcription results", "commit": "17730a7" },
         { "description": "Configurable max characters per line and lines per cue for subtitles", "commit": "17730a7" },
         { "description": "Word-level timestamp-based cue splitting", "commit": "17730a7" },
-        { "description": "Extensions map in TranscriptionConfig for provider-specific STT settings", "commit": "84c37f5" },
-        { "description": "Extensions map in SynthesisConfig for provider-specific TTS settings", "commit": "665c3be" }
+        { "description": "`Extensions` map in `TranscriptionConfig` for provider-specific STT settings", "commit": "84c37f5" },
+        { "description": "`Extensions` map in `SynthesisConfig` for provider-specific TTS settings", "commit": "665c3be" }
       ],
       "tests": [
-        { "description": "Provider conformance testing utilities for call system providers", "commit": "9683ca2" },
-        { "description": "Provider conformance testing utilities for transport providers", "commit": "9683ca2" }
+        { "description": "Call system provider conformance tests (`MakeCall`, `ListCalls`, `OnIncomingCall`)", "commit": "9683ca2" },
+        { "description": "Transport provider conformance tests (`Listen`, `Connect`, `Protocol`)", "commit": "9683ca2" }
       ],
       "fixed": [
         { "description": "Subtitle `wrapText` no longer clips words when text exceeds line limit", "commit": "63144bb" }
@@ -80,9 +80,9 @@
         { "description": "MCP server with stdio transport for voice interactions", "commit": "721cbac" },
         { "description": "Voice interaction tools: `initiate_call`, `continue_call`, `speak_to_user`, `end_call`", "commit": "721cbac" },
         { "description": "Session management for tracking active voice calls", "commit": "721cbac" },
-        { "description": "TTSPipeline for streaming TTS output to transport connections", "commit": "11c906d" },
-        { "description": "StreamingTTSPipeline for connecting streaming LLM text to TTS to transport", "commit": "11c906d" },
-        { "description": "STTPipeline for streaming audio from transport to STT with event callbacks", "commit": "11c906d" }
+        { "description": "`TTSPipeline` for streaming TTS output to transport connections", "commit": "11c906d" },
+        { "description": "`StreamingTTSPipeline` for connecting streaming LLM text to TTS to transport", "commit": "11c906d" },
+        { "description": "`STTPipeline` for streaming audio from transport to STT with event callbacks", "commit": "11c906d" }
       ],
       "documentation": [
         { "description": "Voice integration PRD outlining goals, user stories, and success metrics", "commit": "fd86611" },
