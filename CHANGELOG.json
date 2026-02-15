@@ -24,6 +24,9 @@
         { "description": "Provider conformance testing utilities for call system providers", "commit": "9683ca2" },
         { "description": "Provider conformance testing utilities for transport providers", "commit": "9683ca2" }
       ],
+      "fixed": [
+        { "description": "Subtitle `wrapText` no longer clips words when text exceeds line limit", "commit": "63144bb" }
+      ],
       "documentation": [
         { "description": "Voice cloning guide with recording tips and phonetically balanced text", "commit": "1f0cdd8" }
       ]
