@@ -66,7 +66,9 @@ Verify actual synthesis/transcription works:
 | `Synthesize` | ✓ | — | Returns valid audio bytes |
 | `SynthesizeStream` | ✓ | — | Streams audio chunks correctly |
 | `SynthesizeFromReader` | ✓ | — | Handles streaming input |
-| `Transcribe` | — | ✓ | Returns valid transcription |
+| `Transcribe` | — | ✓ | Returns valid transcription from audio bytes |
+| `TranscribeFile` | — | ✓ | Returns valid transcription from local file |
+| `TranscribeURL` | — | ✓ | Returns valid transcription from remote URL |
 | `TranscribeStream` | — | ✓ | Streams transcription events |
 
 ## API Design
@@ -199,6 +201,14 @@ type Config struct {
 
     // TestAudioConfig is the config matching TestAudio format.
     TestAudioConfig stt.TranscriptionConfig
+
+    // TestAudioFile is a path to an audio file for TranscribeFile tests.
+    // If empty, TranscribeFile test is skipped.
+    TestAudioFile string
+
+    // TestAudioURL is a URL to an audio file for TranscribeURL tests.
+    // If empty, TranscribeURL test is skipped.
+    TestAudioURL string
 
     // Timeout for individual test operations.
     Timeout time.Duration
@@ -614,15 +624,15 @@ func (m *MockProvider) SynthesizeStream(ctx context.Context, text string, config
 - [x] Create `stt/providertest/providertest.go` with Config and runners
 - [x] Implement interface tests (Name)
 - [x] Implement behavior tests (empty audio, context cancellation)
-- [x] Implement integration tests (Transcribe, TranscribeStream)
+- [x] Implement integration tests (Transcribe, TranscribeFile, TranscribeURL, TranscribeStream)
 - [x] Create mock provider for self-testing
 - [ ] Add test audio fixtures
 
 ### Phase 3: Provider Integration
 
-- [ ] Add conformance tests to omnivoice-deepgram
-- [ ] Add conformance tests to go-elevenlabs/omnivoice
-- [ ] Document conformance testing in README
+- [x] Add conformance tests to omnivoice-deepgram
+- [x] Add conformance tests to go-elevenlabs/omnivoice
+- [x] Document conformance testing in README
 
 ## References
 

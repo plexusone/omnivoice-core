@@ -261,6 +261,64 @@ Poor: > 1500ms feels laggy
 | Retell AI | High | Low | Built-in | $$ |
 | Custom (OmniVoice) | Full | Variable | Via integration | Variable |
 
+## Provider Conformance Testing
+
+OmniVoice includes conformance test suites that provider implementations can use to verify they correctly implement the TTS and STT interfaces with consistent behavior.
+
+### Using Conformance Tests
+
+Provider implementations should import the `providertest` packages and run the conformance tests:
+
+```go
+// In your provider's conformance_test.go
+import (
+    "github.com/agentplexus/omnivoice/stt/providertest"
+    // or for TTS:
+    // "github.com/agentplexus/omnivoice/tts/providertest"
+)
+
+func TestConformance(t *testing.T) {
+    p, err := New(WithAPIKey(apiKey))
+    if err != nil {
+        t.Fatal(err)
+    }
+
+    providertest.RunAll(t, providertest.Config{
+        Provider:        p,
+        TestAudioFile:   "/path/to/test.mp3",
+        TestAudioURL:    "https://example.com/test.mp3",
+        // ...
+    })
+}
+```
+
+### Test Categories
+
+| Category | Description | API Required |
+|----------|-------------|--------------|
+| Interface | Verify provider implements interface contract (Name, etc.) | No |
+| Behavior | Verify edge case handling (empty input, context cancellation) | Sometimes |
+| Integration | Verify actual synthesis/transcription works | Yes |
+
+### STT Integration Tests
+
+| Test | Description |
+|------|-------------|
+| `Transcribe` | Batch transcription from audio bytes |
+| `TranscribeFile` | Batch transcription from local file path |
+| `TranscribeURL` | Batch transcription from remote URL |
+| `TranscribeStream` | Real-time streaming transcription |
+
+### TTS Integration Tests
+
+| Test | Description |
+|------|-------------|
+| `Synthesize` | Returns valid audio bytes |
+| `SynthesizeStream` | Streams audio chunks |
+| `SynthesizeFromReader` | Handles streaming text input |
+
+See [Provider Conformance Testing TRD](https://agentplexus.github.io/omnivoice/provider-conformance-testing/) for detailed design documentation.
+
 ## Resources
 
 ### Call Systems
