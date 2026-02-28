@@ -272,9 +272,9 @@ Provider implementations should import the `providertest` packages and run the c
 ```go
 // In your provider's conformance_test.go
 import (
-    "github.com/agentplexus/omnivoice/stt/providertest"
+    "github.com/plexusone/omnivoice/stt/providertest"
     // or for TTS:
-    // "github.com/agentplexus/omnivoice/tts/providertest"
+    // "github.com/plexusone/omnivoice/tts/providertest"
 )
 
 func TestConformance(t *testing.T) {
@@ -317,7 +317,7 @@ func TestConformance(t *testing.T) {
 | `SynthesizeStream` | Streams audio chunks |
 | `SynthesizeFromReader` | Handles streaming text input |
 
-See [Provider Conformance Testing TRD](https://agentplexus.github.io/omnivoice/provider-conformance-testing/) for detailed design documentation.
+See [Provider Conformance Testing TRD](https://plexusone.github.io/omnivoice/provider-conformance-testing/) for detailed design documentation.
 
 ## Resources
 
@@ -335,15 +335,15 @@ See [Provider Conformance Testing TRD](https://agentplexus.github.io/omnivoice/p
 - [Vapi](https://vapi.ai/)
 - [Retell AI](https://www.retellai.com/)
 
- [build-status-svg]: https://github.com/agentplexus/omnivoice/actions/workflows/ci.yaml/badge.svg?branch=main
- [build-status-url]: https://github.com/agentplexus/omnivoice/actions/workflows/ci.yaml
- [lint-status-svg]: https://github.com/agentplexus/omnivoice/actions/workflows/lint.yaml/badge.svg?branch=main
- [lint-status-url]: https://github.com/agentplexus/omnivoice/actions/workflows/lint.yaml
- [goreport-svg]: https://goreportcard.com/badge/github.com/agentplexus/omnivoice
- [goreport-url]: https://goreportcard.com/report/github.com/agentplexus/omnivoice
- [docs-godoc-svg]: https://pkg.go.dev/badge/github.com/agentplexus/omnivoice
- [docs-godoc-url]: https://pkg.go.dev/github.com/agentplexus/omnivoice
+ [build-status-svg]: https://github.com/plexusone/omnivoice/actions/workflows/ci.yaml/badge.svg?branch=main
+ [build-status-url]: https://github.com/plexusone/omnivoice/actions/workflows/ci.yaml
+ [lint-status-svg]: https://github.com/plexusone/omnivoice/actions/workflows/lint.yaml/badge.svg?branch=main
+ [lint-status-url]: https://github.com/plexusone/omnivoice/actions/workflows/lint.yaml
+ [goreport-svg]: https://goreportcard.com/badge/github.com/plexusone/omnivoice
+ [goreport-url]: https://goreportcard.com/report/github.com/plexusone/omnivoice
+ [docs-godoc-svg]: https://pkg.go.dev/badge/github.com/plexusone/omnivoice
+ [docs-godoc-url]: https://pkg.go.dev/github.com/plexusone/omnivoice
  [license-svg]: https://img.shields.io/badge/license-MIT-blue.svg
- [license-url]: https://github.com/agentplexus/omnivoice/blob/master/LICENSE
- [used-by-svg]: https://sourcegraph.com/github.com/agentplexus/omnivoice/-/badge.svg
- [used-by-url]: https://sourcegraph.com/github.com/agentplexus/omnivoice?badge
+ [license-url]: https://github.com/plexusone/omnivoice/blob/master/LICENSE
+ [used-by-svg]: https://sourcegraph.com/github.com/plexusone/omnivoice/-/badge.svg
+ [used-by-url]: https://sourcegraph.com/github.com/plexusone/omnivoice?badge

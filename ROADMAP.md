@@ -41,7 +41,7 @@ Priority order based on AgentPlexus use cases (slide decks → LMS videos):
 omnivoice/
 └── tts/
     ├── elevenlabs/           # Priority 1 - Primary provider
-    │   └── elevenlabs.go     # Uses github.com/agentplexus/go-elevenlabs
+    │   └── elevenlabs.go     # Uses github.com/plexusone/go-elevenlabs
     ├── google/               # Priority 2 - Wide language support
     │   └── google.go
     ├── polly/                # Priority 3 - AWS integration
@@ -53,7 +53,7 @@ omnivoice/
 ```
 
 **Dependencies:**
-- `github.com/agentplexus/go-elevenlabs` (move from grokify first)
+- `github.com/plexusone/go-elevenlabs` (move from grokify first)
 
 ### Phase 2: STT Providers
 
@@ -167,7 +167,7 @@ Voice agents need a **transport layer** to receive/send audio:
 
 | Provider | Go SDK | Status |
 |----------|--------|--------|
-| ElevenLabs | `github.com/agentplexus/go-elevenlabs` | Move from grokify |
+| ElevenLabs | `github.com/plexusone/go-elevenlabs` | Move from grokify |
 | Deepgram | `github.com/deepgram/deepgram-go-sdk` | Available |
 | OpenAI (Whisper) | `github.com/sashabaranov/go-openai` | Available |
 | Google Cloud | `cloud.google.com/go/speech` | Available |
@@ -209,7 +209,7 @@ For natural conversation:
 
 ## Next Steps
 
-1. **Move go-elevenlabs** to `github.com/agentplexus/go-elevenlabs`
+1. **Move go-elevenlabs** to `github.com/plexusone/go-elevenlabs`
 2. **Implement `tts/elevenlabs`** using the moved SDK
 3. **Implement `stt/deepgram`** for real-time transcription
 4. **Implement `transport/websocket`** for streaming

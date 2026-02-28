@@ -8,7 +8,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/agentplexus/omnivoice/tts"
+	"github.com/plexusone/omnivoice/tts"
 )
 
 func main() {

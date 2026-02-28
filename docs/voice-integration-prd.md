@@ -179,7 +179,7 @@ resp, _ := client.Twilio().OutboundCall(ctx, &TwilioOutboundCallRequest{
 The `go-elevenlabs` library provides full support:
 
 ```go
-import "github.com/agentplexus/go-elevenlabs"
+import "github.com/plexusone/go-elevenlabs"
 
 client := elevenlabs.NewClient(apiKey)
 
@@ -316,7 +316,7 @@ This gives you the best of both worlds: premium voice quality from ElevenLabs wi
 
 ### ElevenLabs ConvAI
 
-- Library: `github.com/agentplexus/go-elevenlabs`
+- Library: `github.com/plexusone/go-elevenlabs`
 - Services: `Twilio()`, `PhoneNumbers()`, `WebSocketTTS()`
 - Docs: [ElevenLabs Conversational AI](https://elevenlabs.io/docs/conversational-ai)
 
@@ -329,5 +329,5 @@ This gives you the best of both worlds: premium voice quality from ElevenLabs wi
 ### ADK Agents
 
 - Library: `google.golang.org/adk`
-- Example: `github.com/agentplexus/stats-agent-team`
+- Example: `github.com/plexusone/stats-agent-team`
 - Pattern: BaseAgent → LLM Agent → Tools → A2A Protocol

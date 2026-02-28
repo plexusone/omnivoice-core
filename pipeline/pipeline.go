@@ -10,9 +10,9 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/agentplexus/omnivoice/stt"
-	"github.com/agentplexus/omnivoice/transport"
-	"github.com/agentplexus/omnivoice/tts"
+	"github.com/plexusone/omnivoice/stt"
+	"github.com/plexusone/omnivoice/transport"
+	"github.com/plexusone/omnivoice/tts"
 )
 
 // TTSPipeline connects a TTS provider's streaming output to a transport connection.

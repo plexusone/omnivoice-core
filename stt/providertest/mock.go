@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/agentplexus/omnivoice/stt"
+	"github.com/plexusone/omnivoice/stt"
 )
 
 // Verify MockProvider implements the interfaces.

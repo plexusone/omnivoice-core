@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agentplexus/omnivoice/stt"
+	"github.com/plexusone/omnivoice/stt"
 )
 
 func TestGenerateSRT(t *testing.T) {

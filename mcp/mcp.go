@@ -28,9 +28,9 @@
 package mcp
 
 import (
-	"github.com/agentplexus/omnivoice/stt"
-	"github.com/agentplexus/omnivoice/transport"
-	"github.com/agentplexus/omnivoice/tts"
+	"github.com/plexusone/omnivoice/stt"
+	"github.com/plexusone/omnivoice/transport"
+	"github.com/plexusone/omnivoice/tts"
 )
 
 // Config configures the MCP server.

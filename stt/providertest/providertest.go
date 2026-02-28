@@ -26,7 +26,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/agentplexus/omnivoice/stt"
+	"github.com/plexusone/omnivoice/stt"
 )
 
 // Config configures the STT conformance test suite.

@@ -1,10 +1,10 @@
 site_name: OmniVoice
-site_url: https://agentplexus.github.io/omnivoice/
-site_description: Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents
-site_author: AgentPlexus
+site_url: https://plexusone.github.io/omnivoice/
+site_description: Voice abstraction layer for PlexusOne supporting TTS, STT, and Voice Agents
+site_author: PlexusOne
 
-repo_name: agentplexus/omnivoice
-repo_url: https://github.com/agentplexus/omnivoice
+repo_name: plexusone/omnivoice
+repo_url: https://github.com/plexusone/omnivoice
 
 theme:
   name: material
@@ -40,6 +40,7 @@ nav:
   - Roadmap: roadmap.md
   - Changelog: changelog.md
   - Releases:
+      - v0.5.0: releases/v0.5.0.md
       - v0.4.1: releases/v0.4.1.md
       - v0.4.0: releases/v0.4.0.md
       - v0.3.0: releases/v0.3.0.md

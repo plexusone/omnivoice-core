@@ -1,6 +1,6 @@
 ---
 marp: true
-theme: agentplexus
+theme: plexusone
 paginate: true
 ---
 
@@ -231,10 +231,10 @@ type Session interface {
 
 ```go
 import (
-    "github.com/agentplexus/omnivoice-twilio/callsystem"
-    "github.com/agentplexus/omnivoice-twilio/transport"
-    "github.com/agentplexus/omnivoice-twilio/tts"
-    "github.com/agentplexus/omnivoice-twilio/stt"
+    "github.com/plexusone/omnivoice-twilio/callsystem"
+    "github.com/plexusone/omnivoice-twilio/transport"
+    "github.com/plexusone/omnivoice-twilio/tts"
+    "github.com/plexusone/omnivoice-twilio/stt"
 )
 
 // Create call system
@@ -261,8 +261,8 @@ call, _ := cs.MakeCall(ctx, "+15559876543")
 
 ```go
 import (
-    "github.com/agentplexus/omnivoice-elevenlabs/tts"
-    "github.com/agentplexus/omnivoice-elevenlabs/stt"
+    "github.com/plexusone/omnivoice-elevenlabs/tts"
+    "github.com/plexusone/omnivoice-elevenlabs/stt"
 )
 
 // Create TTS provider
@@ -446,13 +446,13 @@ for event := range events {
 
 ```bash
 # Core library (interfaces only)
-go get github.com/agentplexus/omnivoice
+go get github.com/plexusone/omnivoice
 
 # Twilio provider (telephony + TTS + STT)
-go get github.com/agentplexus/omnivoice-twilio
+go get github.com/plexusone/omnivoice-twilio
 
 # ElevenLabs provider (premium TTS + STT)
-go get github.com/agentplexus/omnivoice-elevenlabs
+go get github.com/plexusone/omnivoice-elevenlabs
 ```
 
 **Environment Variables:**
@@ -474,7 +474,7 @@ package main
 
 import (
     "context"
-    "github.com/agentplexus/omnivoice-twilio/callsystem"
+    "github.com/plexusone/omnivoice-twilio/callsystem"
 )
 
 func main() {
@@ -534,9 +534,9 @@ func main() {
 
 **Get Started:**
 ```bash
-go get github.com/agentplexus/omnivoice
-go get github.com/agentplexus/omnivoice-twilio
-go get github.com/agentplexus/omnivoice-elevenlabs
+go get github.com/plexusone/omnivoice
+go get github.com/plexusone/omnivoice-twilio
+go get github.com/plexusone/omnivoice-elevenlabs
 ```
 
 ---
@@ -544,12 +544,12 @@ go get github.com/agentplexus/omnivoice-elevenlabs
 # Resources
 
 **Repositories:**
-- [github.com/agentplexus/omnivoice](https://github.com/agentplexus/omnivoice)
-- [github.com/agentplexus/omnivoice-twilio](https://github.com/agentplexus/omnivoice-twilio)
-- [github.com/agentplexus/omnivoice-elevenlabs](https://github.com/agentplexus/omnivoice-elevenlabs)
+- [github.com/plexusone/omnivoice](https://github.com/plexusone/omnivoice)
+- [github.com/plexusone/omnivoice-twilio](https://github.com/plexusone/omnivoice-twilio)
+- [github.com/plexusone/omnivoice-elevenlabs](https://github.com/plexusone/omnivoice-elevenlabs)
 
 **Documentation:**
-- [pkg.go.dev/github.com/agentplexus/omnivoice](https://pkg.go.dev/github.com/agentplexus/omnivoice)
+- [pkg.go.dev/github.com/plexusone/omnivoice](https://pkg.go.dev/github.com/plexusone/omnivoice)
 
 **Provider Docs:**
 - [Twilio Media Streams](https://www.twilio.com/docs/voice/media-streams)
@@ -563,4 +563,4 @@ go get github.com/agentplexus/omnivoice-elevenlabs
 
 **OmniVoice** - Voice abstraction for AI agents
 
-github.com/agentplexus/omnivoice
+github.com/plexusone/omnivoice

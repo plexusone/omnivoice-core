@@ -150,7 +150,7 @@ Twilio provides multiple approaches for building voice AI applications. Each has
 
 **Best for:** Single-agent voice apps, rapid prototyping, when voice quality is priority
 
-**Go SDK:** `github.com/agentplexus/go-elevenlabs` - Full ConvAI support including:
+**Go SDK:** `github.com/plexusone/go-elevenlabs` - Full ConvAI support including:
 - `client.Twilio().RegisterCall()` - Register incoming calls
 - `client.Twilio().OutboundCall()` - Make outbound calls
 - Custom LLM configuration via agent settings

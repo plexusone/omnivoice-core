@@ -83,7 +83,7 @@ import (
     "testing"
     "time"
 
-    "github.com/agentplexus/omnivoice/tts"
+    "github.com/plexusone/omnivoice/tts"
 )
 
 // Config configures the TTS conformance test suite.
@@ -175,7 +175,7 @@ import (
     "testing"
     "time"
 
-    "github.com/agentplexus/omnivoice/stt"
+    "github.com/plexusone/omnivoice/stt"
 )
 
 // Config configures the STT conformance test suite.
@@ -247,7 +247,7 @@ import (
     "os"
     "testing"
 
-    "github.com/agentplexus/omnivoice/tts/providertest"
+    "github.com/plexusone/omnivoice/tts/providertest"
 )
 
 func TestConformance(t *testing.T) {
@@ -280,7 +280,7 @@ import (
     "os"
     "testing"
 
-    "github.com/agentplexus/omnivoice/tts/providertest"
+    "github.com/plexusone/omnivoice/tts/providertest"
 )
 
 func TestConformance(t *testing.T) {
@@ -554,7 +554,7 @@ package providertest
 
 import (
     "context"
-    "github.com/agentplexus/omnivoice/tts"
+    "github.com/plexusone/omnivoice/tts"
 )
 
 // MockProvider is a minimal TTS provider for testing the test suite itself.

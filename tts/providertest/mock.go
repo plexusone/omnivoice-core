@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/agentplexus/omnivoice/tts"
+	"github.com/plexusone/omnivoice/tts"
 )
 
 // Verify MockProvider implements the interfaces.
