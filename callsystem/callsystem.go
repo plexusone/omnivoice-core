@@ -91,13 +91,13 @@ type CallSystemConfig struct {
 	AccountSID string
 
 	// AuthToken is the authentication token.
-	AuthToken string
+	AuthToken string //nolint:gosec // G117: field intentionally stores credential
 
 	// APIKey is an API key (alternative to AuthToken).
-	APIKey string
+	APIKey string //nolint:gosec // G117: field intentionally stores credential
 
 	// APISecret is the API secret.
-	APISecret string
+	APISecret string //nolint:gosec // G117: field intentionally stores credential
 
 	// WebhookURL is the URL for incoming webhooks.
 	WebhookURL string

@@ -55,8 +55,8 @@ func MulawDecodeBytes(mulaw []byte) []byte {
 	for i, sample := range mulaw {
 		decoded := mulawDecodeSample(sample)
 		// Little-endian: low byte first
-		result[i*2] = byte(decoded)
-		result[i*2+1] = byte(decoded >> 8)
+		result[i*2] = uint8(decoded & 0xFF)          //nolint:gosec // G115: intentional low byte extraction
+		result[i*2+1] = uint8((decoded >> 8) & 0xFF) //nolint:gosec // G115: intentional high byte extraction
 	}
 	return result
 }

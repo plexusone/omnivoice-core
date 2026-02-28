@@ -82,7 +82,7 @@ func handleInboundCall(w http.ResponseWriter, r *http.Request) {
 	safeTo := strings.ReplaceAll(strings.ReplaceAll(to, "\n", ""), "\r", "")
 	safeCallSID := strings.ReplaceAll(strings.ReplaceAll(callSID, "\n", ""), "\r", "")
 
-	log.Printf("Incoming call: %s -> %s (SID: %s)", safeFrom, safeTo, safeCallSID)
+	log.Printf("Incoming call: %s -> %s (SID: %s)", safeFrom, safeTo, safeCallSID) //nolint:gosec // G706: values sanitized above
 
 	// Return TwiML connecting to ConversationRelay
 	// This tells Twilio to open a WebSocket to our agent
@@ -105,8 +105,8 @@ func handleInboundCall(w http.ResponseWriter, r *http.Request) {
 </Response>`, wsURL, from)
 
 	w.Header().Set("Content-Type", "application/xml")
-	if _, err := w.Write([]byte(twiml)); err != nil {
-		slog.Error("failed to write TwiML response", "error", err, "callSid", callSID)
+	if _, err := w.Write([]byte(twiml)); err != nil { //nolint:gosec // G705: twiml is server-generated XML
+		slog.Error("failed to write TwiML response", "error", err, "callSid", safeCallSID) //nolint:gosec // G706: sanitized
 	}
 }
 
@@ -119,7 +119,7 @@ func handleCallStatus(w http.ResponseWriter, r *http.Request) {
 	safeCallSID := strings.ReplaceAll(strings.ReplaceAll(callSID, "\n", ""), "\r", "")
 	safeStatus := strings.ReplaceAll(strings.ReplaceAll(status, "\n", ""), "\r", "")
 
-	log.Printf("Call status update: %s -> %s", safeCallSID, safeStatus)
+	log.Printf("Call status update: %s -> %s", safeCallSID, safeStatus) //nolint:gosec // G706: values sanitized above
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -128,7 +128,7 @@ func handleCallStatus(w http.ResponseWriter, r *http.Request) {
 func handleAgentWebSocket(w http.ResponseWriter, r *http.Request) {
 	callSID := r.URL.Query().Get("callSid")
 	safeCallSID := strings.ReplaceAll(strings.ReplaceAll(callSID, "\n", ""), "\r", "")
-	log.Printf("Agent WebSocket connected for call: %s", safeCallSID)
+	log.Printf("Agent WebSocket connected for call: %s", safeCallSID) //nolint:gosec // G706: sanitized
 
 	// TODO: Implement WebSocket handling with OmniVoice
 	//

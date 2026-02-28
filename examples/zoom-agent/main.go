@@ -33,6 +33,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -90,7 +91,8 @@ func main() {
 	// - Handling SDK raw audio callbacks
 	// - Months of engineering work
 
-	log.Printf("Would join meeting: %s", meetingURL)
+	safeMeetingURL := strings.ReplaceAll(strings.ReplaceAll(meetingURL, "\n", ""), "\r", "")
+	log.Printf("Would join meeting: %s", safeMeetingURL) //nolint:gosec // G706: sanitized
 	log.Println("Implementation requires Recall.ai API key")
 	log.Println("See: https://www.recall.ai/")
 
