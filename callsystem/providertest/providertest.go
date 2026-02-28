@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/plexusone/omnivoice/callsystem"
+	"github.com/plexusone/omnivoice-core/callsystem"
 )
 
 // Config configures the callsystem conformance test suite.

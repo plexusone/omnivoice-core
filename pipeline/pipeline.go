@@ -10,9 +10,9 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/plexusone/omnivoice/stt"
-	"github.com/plexusone/omnivoice/transport"
-	"github.com/plexusone/omnivoice/tts"
+	"github.com/plexusone/omnivoice-core/stt"
+	"github.com/plexusone/omnivoice-core/transport"
+	"github.com/plexusone/omnivoice-core/tts"
 )
 
 // TTSPipeline connects a TTS provider's streaming output to a transport connection.

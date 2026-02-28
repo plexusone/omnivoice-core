@@ -3,8 +3,8 @@ site_url: https://plexusone.github.io/omnivoice/
 site_description: Voice abstraction layer for PlexusOne supporting TTS, STT, and Voice Agents
 site_author: PlexusOne
 
-repo_name: plexusone/omnivoice
-repo_url: https://github.com/plexusone/omnivoice
+repo_name: plexusone/omnivoice-core
+repo_url: https://github.com/plexusone/omnivoice-core
 
 theme:
   name: material

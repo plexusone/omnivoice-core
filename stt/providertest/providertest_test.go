@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/plexusone/omnivoice/stt"
+	"github.com/plexusone/omnivoice-core/stt"
 )
 
 // TestRunAll_MockProvider verifies the test suite works with the mock provider.

@@ -26,7 +26,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/plexusone/omnivoice/tts"
+	"github.com/plexusone/omnivoice-core/tts"
 )
 
 // Config configures the TTS conformance test suite.

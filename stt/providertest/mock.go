@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/plexusone/omnivoice/stt"
+	"github.com/plexusone/omnivoice-core/stt"
 )
 
 // Verify MockProvider implements the interfaces.

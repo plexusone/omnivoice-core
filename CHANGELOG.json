@@ -1,7 +1,7 @@
 {
   "irVersion": "1.0",
   "project": "omnivoice",
-  "repository": "https://github.com/plexusone/omnivoice",
+  "repository": "https://github.com/plexusone/omnivoice-core",
   "versioning": "semver",
   "commitConvention": "conventional",
   "maintainers": ["grokify", "johncwang@gmail.com"],
@@ -13,7 +13,7 @@
         { "description": "Organization rename from agentplexus to plexusone" }
       ],
       "changed": [
-        { "description": "**Breaking**: Go module path changed from `github.com/agentplexus/omnivoice` to `github.com/plexusone/omnivoice`", "commit": "e19957e" }
+        { "description": "**Breaking**: Go module path changed from `github.com/agentplexus/omnivoice` to `github.com/plexusone/omnivoice-core`", "commit": "e19957e" }
       ]
     },
     {

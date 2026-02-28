@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/plexusone/omnivoice/stt"
-	"github.com/plexusone/omnivoice/transport"
-	"github.com/plexusone/omnivoice/tts"
+	"github.com/plexusone/omnivoice-core/stt"
+	"github.com/plexusone/omnivoice-core/transport"
+	"github.com/plexusone/omnivoice-core/tts"
 )
 
 // Session errors

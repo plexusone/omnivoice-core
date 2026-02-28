@@ -5,8 +5,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/plexusone/omnivoice/agent"
-	"github.com/plexusone/omnivoice/transport"
+	"github.com/plexusone/omnivoice-core/agent"
+	"github.com/plexusone/omnivoice-core/transport"
 )
 
 // CallDirection indicates inbound or outbound call.

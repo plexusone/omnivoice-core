@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/plexusone/omnivoice/transport"
+	"github.com/plexusone/omnivoice-core/transport"
 )
 
 // Config configures the transport conformance test suite.

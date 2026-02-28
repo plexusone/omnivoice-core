@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/plexusone/omnivoice/stt"
+	"github.com/plexusone/omnivoice-core/stt"
 )
 
 // Options configures subtitle generation.
