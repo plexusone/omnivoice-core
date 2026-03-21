@@ -4,6 +4,8 @@ package tts
 import (
 	"context"
 	"io"
+
+	"github.com/plexusone/omnivoice-core/observability"
 )
 
 // Voice represents a voice configuration for TTS.
@@ -57,6 +59,10 @@ type SynthesisConfig struct {
 	// Keys should be namespaced by provider (e.g., "elevenlabs.style", "deepgram.tier").
 	// Use provider-specific helper functions for type-safe access.
 	Extensions map[string]any
+
+	// Hook provides observability for TTS operations.
+	// If nil, no hooks are called.
+	Hook observability.TTSHook
 }
 
 // SynthesisResult contains the result of a TTS synthesis.
@@ -121,6 +127,7 @@ type Client struct {
 	providers map[string]Provider
 	primary   string
 	fallbacks []string
+	hook      observability.TTSHook
 }
 
 // NewClient creates a new TTS client with the specified providers.
@@ -149,6 +156,16 @@ func (c *Client) SetFallbacks(names ...string) {
 	c.fallbacks = names
 }
 
+// SetHook sets the observability hook for all TTS operations.
+func (c *Client) SetHook(hook observability.TTSHook) {
+	c.hook = hook
+}
+
+// Hook returns the current observability hook.
+func (c *Client) Hook() observability.TTSHook {
+	return c.hook
+}
+
 // Provider returns a specific provider by name.
 func (c *Client) Provider(name string) (Provider, bool) {
 	p, ok := c.providers[name]
@@ -157,6 +174,11 @@ func (c *Client) Provider(name string) (Provider, bool) {
 
 // Synthesize uses the primary provider with automatic fallback.
 func (c *Client) Synthesize(ctx context.Context, text string, config SynthesisConfig) (*SynthesisResult, error) {
+	// Apply client hook if config doesn't have one
+	if config.Hook == nil && c.hook != nil {
+		config.Hook = c.hook
+	}
+
 	// Try primary provider
 	if p, ok := c.providers[c.primary]; ok {
 		result, err := p.Synthesize(ctx, text, config)
@@ -181,6 +203,11 @@ func (c *Client) Synthesize(ctx context.Context, text string, config SynthesisCo
 
 // SynthesizeStream uses the primary provider with automatic fallback.
 func (c *Client) SynthesizeStream(ctx context.Context, text string, config SynthesisConfig) (<-chan StreamChunk, error) {
+	// Apply client hook if config doesn't have one
+	if config.Hook == nil && c.hook != nil {
+		config.Hook = c.hook
+	}
+
 	// Try primary provider
 	if p, ok := c.providers[c.primary]; ok {
 		stream, err := p.SynthesizeStream(ctx, text, config)

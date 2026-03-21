@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/plexusone/omnivoice-core/agent"
+	"github.com/plexusone/omnivoice-core/observability"
 	"github.com/plexusone/omnivoice-core/transport"
 )
 
@@ -107,6 +108,10 @@ type CallSystemConfig struct {
 
 	// Region is the service region.
 	Region string
+
+	// Observer receives voice events for observability.
+	// If nil, no events are emitted.
+	Observer observability.VoiceObserver
 }
 
 // CallSystem defines the interface for telephony/meeting integrations.
@@ -146,6 +151,7 @@ type CallOptions struct {
 	Whisper        string
 	AgentConfig    *agent.Config
 	StatusCallback string
+	Observer       observability.VoiceObserver
 }
 
 // WithFrom sets the outbound caller ID.
@@ -195,6 +201,20 @@ func WithStatusCallback(url string) CallOption {
 	return func(o *CallOptions) {
 		o.StatusCallback = url
 	}
+}
+
+// WithObserver sets a voice observer for call events.
+func WithObserver(observer observability.VoiceObserver) CallOption {
+	return func(o *CallOptions) {
+		o.Observer = observer
+	}
+}
+
+// ObservableCallSystem extends CallSystem with observability support.
+// Providers that support observability should implement this interface.
+type ObservableCallSystem interface {
+	CallSystem
+	observability.Observable
 }
 
 // MeetingSystem defines the interface for meeting platform integrations.

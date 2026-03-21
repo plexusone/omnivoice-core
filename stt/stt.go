@@ -5,6 +5,8 @@ import (
 	"context"
 	"io"
 	"time"
+
+	"github.com/plexusone/omnivoice-core/observability"
 )
 
 // TranscriptionConfig configures a STT transcription request.
@@ -47,6 +49,10 @@ type TranscriptionConfig struct {
 	// Keys should be namespaced by provider (e.g., "deepgram.tier", "elevenlabs.num_speakers").
 	// Use provider-specific helper functions for type-safe access.
 	Extensions map[string]any
+
+	// Hook provides observability for STT operations.
+	// If nil, no hooks are called.
+	Hook observability.STTHook
 }
 
 // Word represents a single transcribed word with timing.
@@ -179,6 +185,7 @@ type Client struct {
 	providers map[string]Provider
 	primary   string
 	fallbacks []string
+	hook      observability.STTHook
 }
 
 // NewClient creates a new STT client with the specified providers.
@@ -207,6 +214,16 @@ func (c *Client) SetFallbacks(names ...string) {
 	c.fallbacks = names
 }
 
+// SetHook sets the observability hook for all STT operations.
+func (c *Client) SetHook(hook observability.STTHook) {
+	c.hook = hook
+}
+
+// Hook returns the current observability hook.
+func (c *Client) Hook() observability.STTHook {
+	return c.hook
+}
+
 // Provider returns a specific provider by name.
 func (c *Client) Provider(name string) (Provider, bool) {
 	p, ok := c.providers[name]
@@ -215,6 +232,11 @@ func (c *Client) Provider(name string) (Provider, bool) {
 
 // Transcribe uses the primary provider with automatic fallback.
 func (c *Client) Transcribe(ctx context.Context, audio []byte, config TranscriptionConfig) (*TranscriptionResult, error) {
+	// Apply client hook if config doesn't have one
+	if config.Hook == nil && c.hook != nil {
+		config.Hook = c.hook
+	}
+
 	// Try primary provider
 	if p, ok := c.providers[c.primary]; ok {
 		result, err := p.Transcribe(ctx, audio, config)
@@ -239,6 +261,11 @@ func (c *Client) Transcribe(ctx context.Context, audio []byte, config Transcript
 // TranscribeStream attempts streaming transcription with the primary provider.
 // Falls back to batch transcription if streaming is not available.
 func (c *Client) TranscribeStream(ctx context.Context, config TranscriptionConfig) (io.WriteCloser, <-chan StreamEvent, error) {
+	// Apply client hook if config doesn't have one
+	if config.Hook == nil && c.hook != nil {
+		config.Hook = c.hook
+	}
+
 	// Try primary provider
 	if p, ok := c.providers[c.primary]; ok {
 		if sp, ok := p.(StreamingProvider); ok {
