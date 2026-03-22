@@ -7,6 +7,34 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.6.0",
+      "date": "2026-03-21",
+      "highlights": [
+        { "description": "Observability package for voice instrumentation with hooks and events" },
+        { "description": "Registry package for provider discovery and registration" },
+        { "description": "CallSystem client with multi-provider failover support" },
+        { "description": "SMS messaging support via SMSProvider interface" }
+      ],
+      "added": [
+        { "description": "`observability` package with VoiceEvent, VoiceObserver, TTSHook, and STTHook interfaces", "commit": "dda0212" },
+        { "description": "Event types for call lifecycle (initiated, ringing, answered, ended, failed)", "commit": "dda0212" },
+        { "description": "NoOpTTSHook and NoOpSTTHook for optional instrumentation", "commit": "dda0212" },
+        { "description": "`registry` package with Registry interface for provider discovery", "commit": "0ec559f" },
+        { "description": "Factory types for TTS, STT, and CallSystem providers", "commit": "0ec559f" },
+        { "description": "`callsystem.Client` for managing multiple CallSystem providers with automatic failover", "commit": "c12a16a" },
+        { "description": "`SMSProvider` interface and `SMSMessage` type for SMS support", "commit": "d7d8c63" },
+        { "description": "`Hook` field in `SynthesisConfig` for TTS observability", "commit": "8b3c38a" },
+        { "description": "`Hook` field in `TranscriptionConfig` for STT observability", "commit": "8b3c38a" },
+        { "description": "`Observer` field in `CallSystemConfig` and `CallOptions` for call events", "commit": "8b3c38a" },
+        { "description": "`WithObserver` CallOption for per-call observability", "commit": "8b3c38a" },
+        { "description": "`ObservableCallSystem` interface combining CallSystem with Observable", "commit": "8b3c38a" },
+        { "description": "`SetHook()` and `Hook()` methods on TTS and STT clients", "commit": "8b3c38a" }
+      ],
+      "fixed": [
+        { "description": "Resolved gosec G120 warnings in Twilio webhook example by adding http.MaxBytesReader", "commit": "ac115b7" }
+      ]
+    },
+    {
       "version": "v0.5.0",
       "date": "2026-02-28",
       "highlights": [

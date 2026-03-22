@@ -100,11 +100,21 @@ omnivoice/
 │
 ├── callsystem/             # Call system integrations
 │   ├── callsystem.go       # Interface definitions
+│   ├── client.go           # Multi-provider client with failover
+│   ├── sms.go              # SMSProvider interface
 │   ├── twilio/             # Twilio ConversationRelay
 │   ├── ringcentral/        # RingCentral Voice API
 │   ├── zoom/               # Zoom SDK integration
 │   ├── livekit/            # LiveKit rooms
 │   └── daily/              # Daily.co
+│
+├── observability/          # Voice instrumentation
+│   ├── events.go           # VoiceEvent, VoiceObserver
+│   └── hooks.go            # TTSHook, STTHook interfaces
+│
+├── registry/               # Provider discovery
+│   ├── registry.go         # Registry interface
+│   └── options.go          # ProviderConfig, ProviderOption
 │
 ├── subtitle/               # Subtitle generation
 │   └── subtitle.go         # SRT/VTT from transcription results
