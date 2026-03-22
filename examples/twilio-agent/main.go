@@ -72,10 +72,17 @@ func main() {
 // handleInboundCall handles incoming Twilio webhook for new calls.
 // Returns TwiML to connect the call to ConversationRelay.
 func handleInboundCall(w http.ResponseWriter, r *http.Request) {
-	// Get caller info from Twilio webhook
-	from := r.FormValue("From")
-	to := r.FormValue("To")
-	callSID := r.FormValue("CallSid")
+	// Limit request body size to prevent memory exhaustion (G120 fix)
+	r.Body = http.MaxBytesReader(w, r.Body, 64<<10) // 64KB - Twilio webhooks are small
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	// Get caller info from Twilio webhook (use Form.Get, not FormValue for G120)
+	from := r.Form.Get("From")
+	to := r.Form.Get("To")
+	callSID := r.Form.Get("CallSid")
 
 	// Sanitize values before logging to prevent log injection via newlines
 	safeFrom := strings.ReplaceAll(strings.ReplaceAll(from, "\n", ""), "\r", "")
@@ -112,8 +119,15 @@ func handleInboundCall(w http.ResponseWriter, r *http.Request) {
 
 // handleCallStatus handles Twilio status callbacks.
 func handleCallStatus(w http.ResponseWriter, r *http.Request) {
-	callSID := r.FormValue("CallSid")
-	status := r.FormValue("CallStatus")
+	// Limit request body size to prevent memory exhaustion (G120 fix)
+	r.Body = http.MaxBytesReader(w, r.Body, 64<<10) // 64KB
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	callSID := r.Form.Get("CallSid")
+	status := r.Form.Get("CallStatus")
 
 	// Sanitize values before logging to prevent log injection via newlines
 	safeCallSID := strings.ReplaceAll(strings.ReplaceAll(callSID, "\n", ""), "\r", "")
