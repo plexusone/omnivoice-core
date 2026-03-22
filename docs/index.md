@@ -49,6 +49,8 @@ Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents ac
 - **Modular Architecture** - Use only the layers you need
 - **Production Ready** - Designed for real-time, low-latency voice applications
 - **Full Stack** - From phone calls to audio processing
+- **Observability** - Built-in hooks for TTS/STT instrumentation and call event tracking
+- **Multi-Provider Failover** - CallSystem client with automatic fallback support
 
 ## Package Structure
 
@@ -70,7 +72,17 @@ omnivoice/
 │   └── transport.go        # Interface definitions
 │
 ├── callsystem/             # Call system integrations
-│   └── callsystem.go       # Interface definitions
+│   ├── callsystem.go       # Interface definitions
+│   ├── client.go           # Multi-provider client with failover
+│   └── sms.go              # SMSProvider interface
+│
+├── observability/          # Voice instrumentation
+│   ├── events.go           # VoiceEvent, VoiceObserver
+│   └── hooks.go            # TTSHook, STTHook interfaces
+│
+├── registry/               # Provider discovery
+│   ├── registry.go         # Registry interface
+│   └── options.go          # ProviderConfig, ProviderOption
 │
 ├── audio/                  # Audio codec utilities
 │   └── codec/              # PCM, mu-law, a-law
