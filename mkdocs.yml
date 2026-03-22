@@ -36,6 +36,8 @@ nav:
       - Twilio Integration TRD: twilio-integration-trd.md
       - Provider Conformance Testing: provider-conformance-testing.md
   - Guides:
+      - Observability: observability.md
+      - Provider Registry: registry.md
       - Voice Cloning: voice-cloning.md
   - Roadmap: roadmap.md
   - Changelog: changelog.md
