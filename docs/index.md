@@ -139,3 +139,25 @@ For natural conversation, total round-trip latency should be under 500ms:
 | STT latency | < 200ms | < 300ms | > 500ms |
 | LLM latency | < 300ms | < 500ms | > 1000ms |
 | TTS latency | < 150ms | < 250ms | > 400ms |
+
+## Testing
+
+OmniVoice includes mock providers and audio fixtures for testing without API keys:
+
+```go
+import "github.com/plexusone/omnivoice-core/tts/providertest"
+
+// Provider-specific mocks
+mock := providertest.NewElevenLabsMock()  // or NewDeepgramMock(), NewOpenAIMock()
+
+// Configurable behavior
+mock := providertest.NewMockProviderWithOptions(
+    providertest.WithLatency(100 * time.Millisecond),
+    providertest.WithError(providertest.ErrMockRateLimit),
+)
+
+// Generate valid WAV fixtures
+fixture := providertest.GenerateWAVFixture(1000, 22050)
+```
+
+See the [Testing with Mocks](testing.md) guide for comprehensive documentation.
