@@ -7,6 +7,37 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.7.0",
+      "date": "2026-03-30",
+      "highlights": [
+        { "description": "Enhanced TTS mock fixtures with WAV audio generation" },
+        { "description": "Provider-specific mocks for ElevenLabs, Deepgram, and OpenAI" },
+        { "description": "Configurable mock behaviors for testing (latency, errors, timing)" }
+      ],
+      "added": [
+        { "description": "`GenerateWAVFixture(durationMs, sampleRate)` creates valid WAV files with proper RIFF headers for testing", "commit": "17ef8b9" },
+        { "description": "`GenerateShortWAV()` and `GenerateOneSecondWAV()` convenience fixtures", "commit": "17ef8b9" },
+        { "description": "`MockProviderOption` functional options pattern for configurable mock behavior", "commit": "17ef8b9" },
+        { "description": "`WithFixedDuration(ms)` option for mocks returning fixed-length audio", "commit": "17ef8b9" },
+        { "description": "`WithRealisticTiming()` option for text-length-proportional audio duration", "commit": "17ef8b9" },
+        { "description": "`WithError(err)` option for error injection testing", "commit": "17ef8b9" },
+        { "description": "`WithLatency(duration)` option for simulating network delays", "commit": "17ef8b9" },
+        { "description": "`WithFailAfterN(n, err)` option for testing retry/failover logic", "commit": "17ef8b9" },
+        { "description": "`NewElevenLabsMock()` with 3 preconfigured voices (Rachel, Bella, Antoni)", "commit": "17ef8b9" },
+        { "description": "`NewDeepgramMock()` with 3 preconfigured voices (Asteria, Luna, Orion)", "commit": "17ef8b9" },
+        { "description": "`NewOpenAIMock()` with 6 preconfigured voices (Alloy, Echo, Fable, Onyx, Nova, Shimmer)", "commit": "17ef8b9" },
+        { "description": "Common test errors: `ErrMockRateLimit`, `ErrMockQuotaExceeded`, `ErrMockNetworkError`, `ErrMockInvalidVoice`", "commit": "17ef8b9" }
+      ],
+      "tests": [
+        { "description": "Comprehensive tests for WAV fixture generation and header validation", "commit": "17ef8b9" },
+        { "description": "Tests for all MockProviderOption behaviors including context cancellation", "commit": "17ef8b9" },
+        { "description": "Provider conformance tests for ElevenLabs, Deepgram, and OpenAI mocks", "commit": "17ef8b9" }
+      ],
+      "fixed": [
+        { "description": "Fixed gofmt formatting and added G115 nolint annotations for bounded integer conversions in WAV generation", "commit": "aa28bc8" }
+      ]
+    },
+    {
       "version": "v0.6.0",
       "date": "2026-03-21",
       "highlights": [

@@ -348,6 +348,29 @@ func TestConformance(t *testing.T) {
 
 See [Provider Conformance Testing TRD](https://plexusone.github.io/omnivoice/provider-conformance-testing/) for detailed design documentation.
 
+### Mock Providers for Testing
+
+The `tts/providertest` package includes mock providers and fixtures for testing TTS integrations without API keys:
+
+```go
+import "github.com/plexusone/omnivoice-core/tts/providertest"
+
+// Provider-specific mocks with realistic voices
+elevenLabs := providertest.NewElevenLabsMock()  // Rachel, Bella, Antoni
+deepgram := providertest.NewDeepgramMock()      // Asteria, Luna, Orion
+openai := providertest.NewOpenAIMock()          // Alloy, Echo, Fable, Onyx, Nova, Shimmer
+
+// Configurable mock behaviors
+mock := providertest.NewMockProviderWithOptions(
+    providertest.WithLatency(100 * time.Millisecond),  // Simulate network delay
+    providertest.WithError(providertest.ErrMockRateLimit),  // Error injection
+    providertest.WithFailAfterN(3, providertest.ErrMockQuotaExceeded),  // Failover testing
+)
+
+// Generate valid WAV fixtures
+fixture := providertest.GenerateWAVFixture(1000, 22050)  // 1 second at 22050 Hz
+```
+
 ## Resources
 
 ### Call Systems
