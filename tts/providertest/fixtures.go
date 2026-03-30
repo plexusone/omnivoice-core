@@ -45,22 +45,22 @@ func GenerateWAVFixture(durationMs int, sampleRate int) AudioFixture {
 
 	// RIFF chunk
 	copy(header[0:4], "RIFF")
-	binary.LittleEndian.PutUint32(header[4:8], uint32(fileSize))
+	binary.LittleEndian.PutUint32(header[4:8], uint32(fileSize)) //nolint:gosec // G115: test fixture with bounded values
 	copy(header[8:12], "WAVE")
 
 	// fmt subchunk
 	copy(header[12:16], "fmt ")
-	binary.LittleEndian.PutUint32(header[16:20], 16)                                        // Subchunk1Size (16 for PCM)
-	binary.LittleEndian.PutUint16(header[20:22], 1)                                         // AudioFormat (1 = PCM)
-	binary.LittleEndian.PutUint16(header[22:24], uint16(numChannels))                       // NumChannels
-	binary.LittleEndian.PutUint32(header[24:28], uint32(sampleRate))                        // SampleRate
-	binary.LittleEndian.PutUint32(header[28:32], uint32(sampleRate*numChannels*bytesPerSample)) // ByteRate
-	binary.LittleEndian.PutUint16(header[32:34], uint16(numChannels*bytesPerSample))        // BlockAlign
-	binary.LittleEndian.PutUint16(header[34:36], uint16(bitsPerSample))                     // BitsPerSample
+	binary.LittleEndian.PutUint32(header[16:20], 16)                                            // Subchunk1Size (16 for PCM)
+	binary.LittleEndian.PutUint16(header[20:22], 1)                                             // AudioFormat (1 = PCM)
+	binary.LittleEndian.PutUint16(header[22:24], uint16(numChannels))                           // NumChannels
+	binary.LittleEndian.PutUint32(header[24:28], uint32(sampleRate))                            // SampleRate
+	binary.LittleEndian.PutUint32(header[28:32], uint32(sampleRate*numChannels*bytesPerSample)) //nolint:gosec // G115: test fixture with bounded values
+	binary.LittleEndian.PutUint16(header[32:34], uint16(numChannels*bytesPerSample))            // BlockAlign
+	binary.LittleEndian.PutUint16(header[34:36], uint16(bitsPerSample))                         // BitsPerSample
 
 	// data subchunk
 	copy(header[36:40], "data")
-	binary.LittleEndian.PutUint32(header[40:44], uint32(dataSize))
+	binary.LittleEndian.PutUint32(header[40:44], uint32(dataSize)) //nolint:gosec // G115: test fixture with bounded values
 
 	// Combine header with silent audio data (zeros)
 	audio := make([]byte, 44+dataSize)
