@@ -35,6 +35,9 @@
       ],
       "fixed": [
         { "description": "Fixed gofmt formatting and added G115 nolint annotations for bounded integer conversions in WAV generation", "commit": "aa28bc8" }
+      ],
+      "documentation": [
+        { "description": "Testing with Mocks guide covering mock providers, WAV fixtures, and common test patterns", "commit": "1980a53" }
       ]
     },
     {
