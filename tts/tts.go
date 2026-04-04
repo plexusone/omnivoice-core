@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/plexusone/omnivoice-core/observability"
+	"github.com/plexusone/omnivoice-core/resilience"
 )
 
 // Voice represents a voice configuration for TTS.
@@ -172,12 +173,16 @@ func (c *Client) Provider(name string) (Provider, bool) {
 	return p, ok
 }
 
-// Synthesize uses the primary provider with automatic fallback.
+// Synthesize uses the primary provider with smart fallback.
+// Fallback only occurs for permanent (non-retryable) errors.
+// Transient errors like rate limits are expected to be handled by the provider's retry logic.
 func (c *Client) Synthesize(ctx context.Context, text string, config SynthesisConfig) (*SynthesisResult, error) {
 	// Apply client hook if config doesn't have one
 	if config.Hook == nil && c.hook != nil {
 		config.Hook = c.hook
 	}
+
+	var lastErr error
 
 	// Try primary provider
 	if p, ok := c.providers[c.primary]; ok {
@@ -185,28 +190,43 @@ func (c *Client) Synthesize(ctx context.Context, text string, config SynthesisCo
 		if err == nil {
 			return result, nil
 		}
-		// Log error and try fallbacks
-	}
+		lastErr = err
 
-	// Try fallbacks
-	for _, name := range c.fallbacks {
-		if p, ok := c.providers[name]; ok {
-			result, err := p.Synthesize(ctx, text, config)
-			if err == nil {
-				return result, nil
+		// Only fallback on permanent errors (non-retryable)
+		// If the error is retryable, the provider's retry logic should have exhausted attempts
+		if shouldFallback(err) {
+			// Try fallbacks
+			for _, name := range c.fallbacks {
+				if p, ok := c.providers[name]; ok {
+					result, err := p.Synthesize(ctx, text, config)
+					if err == nil {
+						return result, nil
+					}
+					lastErr = err
+					// Continue to next fallback only on permanent errors
+					if !shouldFallback(err) {
+						break
+					}
+				}
 			}
 		}
 	}
 
+	if lastErr != nil {
+		return nil, lastErr
+	}
 	return nil, ErrNoAvailableProvider
 }
 
-// SynthesizeStream uses the primary provider with automatic fallback.
+// SynthesizeStream uses the primary provider with smart fallback.
+// Fallback only occurs for permanent (non-retryable) errors.
 func (c *Client) SynthesizeStream(ctx context.Context, text string, config SynthesisConfig) (<-chan StreamChunk, error) {
 	// Apply client hook if config doesn't have one
 	if config.Hook == nil && c.hook != nil {
 		config.Hook = c.hook
 	}
+
+	var lastErr error
 
 	// Try primary provider
 	if p, ok := c.providers[c.primary]; ok {
@@ -214,17 +234,52 @@ func (c *Client) SynthesizeStream(ctx context.Context, text string, config Synth
 		if err == nil {
 			return stream, nil
 		}
-	}
+		lastErr = err
 
-	// Try fallbacks
-	for _, name := range c.fallbacks {
-		if p, ok := c.providers[name]; ok {
-			stream, err := p.SynthesizeStream(ctx, text, config)
-			if err == nil {
-				return stream, nil
+		// Only fallback on permanent errors
+		if shouldFallback(err) {
+			// Try fallbacks
+			for _, name := range c.fallbacks {
+				if p, ok := c.providers[name]; ok {
+					stream, err := p.SynthesizeStream(ctx, text, config)
+					if err == nil {
+						return stream, nil
+					}
+					lastErr = err
+					if !shouldFallback(err) {
+						break
+					}
+				}
 			}
 		}
 	}
 
+	if lastErr != nil {
+		return nil, lastErr
+	}
 	return nil, ErrNoAvailableProvider
+}
+
+// shouldFallback determines if an error should trigger fallback to another provider.
+// Returns true only for permanent (non-retryable) errors.
+// Transient errors (rate limits, server errors) should be retried by the provider,
+// not trigger fallback.
+func shouldFallback(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	// Check if it's a ProviderError with retryability info
+	if pe, ok := resilience.IsProviderError(err); ok {
+		// Only fallback on non-retryable errors
+		return !pe.IsRetryable()
+	}
+
+	// Check for common permanent error sentinels
+	if err == ErrVoiceNotFound || err == ErrInvalidConfig {
+		return false // Don't fallback on these - same error will occur with other providers
+	}
+
+	// Unknown errors - default to fallback (conservative behavior)
+	return true
 }
