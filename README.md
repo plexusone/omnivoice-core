@@ -112,6 +112,13 @@ omnivoice/
 │   ├── events.go           # VoiceEvent, VoiceObserver
 │   └── hooks.go            # TTSHook, STTHook interfaces
 │
+├── resilience/             # Error handling and retry logic
+│   ├── category.go         # Error categories (transient, rate_limit, auth, etc.)
+│   ├── error.go            # ProviderError with classification metadata
+│   ├── classifier.go       # ErrorClassifier interface
+│   ├── retry.go            # Retry and RetryWithResult functions
+│   └── backoff.go          # Backoff strategies (exponential, linear, etc.)
+│
 ├── registry/               # Provider discovery
 │   ├── registry.go         # Registry interface
 │   └── options.go          # ProviderConfig, ProviderOption

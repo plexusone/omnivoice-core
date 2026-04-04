@@ -51,6 +51,7 @@ Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents ac
 - **Full Stack** - From phone calls to audio processing
 - **Observability** - Built-in hooks for TTS/STT instrumentation and call event tracking
 - **Multi-Provider Failover** - CallSystem client with automatic fallback support
+- **Resilient Error Handling** - Smart fallback with error classification and retry logic
 
 ## Package Structure
 
@@ -79,6 +80,12 @@ omnivoice/
 ├── observability/          # Voice instrumentation
 │   ├── events.go           # VoiceEvent, VoiceObserver
 │   └── hooks.go            # TTSHook, STTHook interfaces
+│
+├── resilience/             # Error handling and retry logic
+│   ├── category.go         # Error categories
+│   ├── error.go            # ProviderError type
+│   ├── retry.go            # Retry with backoff
+│   └── backoff.go          # Backoff strategies
 │
 ├── registry/               # Provider discovery
 │   ├── registry.go         # Registry interface
