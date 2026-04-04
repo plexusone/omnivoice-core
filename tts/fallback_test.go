@@ -11,10 +11,10 @@ import (
 
 // mockProvider implements Provider for testing.
 type mockProvider struct {
-	name         string
+	name          string
 	synthesizeErr error
-	streamErr    error
-	calls        int
+	streamErr     error
+	calls         int
 }
 
 func (m *mockProvider) Name() string { return m.name }
