@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://omnivoice.dev/schema/transcript-v1.json",
+  "title": "OmniVoice Transcript",
+  "description": "OmniVoice JSON Transcript format for speech-to-text output",
+  "type": "object",
+  "required": ["$schema", "version", "text", "duration_ms", "metadata"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "https://omnivoice.dev/schema/transcript-v1.json",
+      "description": "JSON Schema URL for validation"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "Format version (e.g., '1.0')"
+    },
+    "text": {
+      "type": "string",
+      "description": "Complete transcription text"
+    },
+    "language": {
+      "type": "string",
+      "description": "Detected or specified language (BCP-47 code, e.g., 'en-US')"
+    },
+    "language_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence score for language detection (0.0-1.0)"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Audio duration in milliseconds"
+    },
+    "segments": {
+      "type": "array",
+      "description": "Transcript broken into segments (sentences, phrases, or utterances)",
+      "items": {
+        "$ref": "#/$defs/segment"
+      }
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    }
+  },
+  "$defs": {
+    "segment": {
+      "type": "object",
+      "required": ["text", "start_ms", "end_ms"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Transcribed text for this segment"
+        },
+        "start_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Start time in milliseconds"
+        },
+        "end_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "End time in milliseconds"
+        },
+        "speaker": {
+          "type": "string",
+          "description": "Speaker identifier (if diarization is enabled)"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Average confidence score for this segment (0.0-1.0)"
+        },
+        "language": {
+          "type": "string",
+          "description": "Detected language for this segment (if different from overall)"
+        },
+        "words": {
+          "type": "array",
+          "description": "Word-level details (if word timestamps are enabled)",
+          "items": {
+            "$ref": "#/$defs/word"
+          }
+        }
+      }
+    },
+    "word": {
+      "type": "object",
+      "required": ["text", "start_ms", "end_ms"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Transcribed word"
+        },
+        "start_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Start time in milliseconds"
+        },
+        "end_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "End time in milliseconds"
+        },
+        "speaker": {
+          "type": "string",
+          "description": "Speaker identifier (if diarization is enabled)"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Recognition confidence (0.0-1.0)"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["provider", "created_at"],
+      "description": "Provenance information about the transcript",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "STT provider used (e.g., 'deepgram', 'openai')"
+        },
+        "model": {
+          "type": "string",
+          "description": "Provider-specific model used (if specified)"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when the transcript was created"
+        },
+        "audio_file": {
+          "type": "string",
+          "description": "Original audio file path or URL (if available)"
+        },
+        "options": {
+          "$ref": "#/$defs/options"
+        }
+      }
+    },
+    "options": {
+      "type": "object",
+      "description": "Transcription options that were used",
+      "properties": {
+        "language": {
+          "type": "string",
+          "description": "Requested language (if specified)"
+        },
+        "enable_punctuation": {
+          "type": "boolean",
+          "description": "Whether punctuation was enabled"
+        },
+        "enable_word_timestamps": {
+          "type": "boolean",
+          "description": "Whether word timestamps were enabled"
+        },
+        "enable_speaker_diarization": {
+          "type": "boolean",
+          "description": "Whether speaker diarization was enabled"
+        }
+      }
+    }
+  }
+}
