@@ -198,4 +198,4 @@ for _, seg := range transcript.Segments {
 }
 ```
 
-See the [v0.9.0 release notes](releases/v0.9.0.md) for full API documentation.
+See the [Transcript Format](transcript.md) guide for full documentation.
