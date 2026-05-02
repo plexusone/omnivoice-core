@@ -2,6 +2,8 @@ package stt
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -162,5 +164,164 @@ func TestTranscriptJSONRoundTrip(t *testing.T) {
 	}
 	if decoded.Segments[0].Start.Milliseconds() != 500 {
 		t.Errorf("decoded Segment.Start.Milliseconds() = %d, want 500", decoded.Segments[0].Start.Milliseconds())
+	}
+}
+
+func TestTranscript_SaveAndLoad(t *testing.T) {
+	// Create a temporary directory for test files
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "test.transcript.json")
+
+	result := &TranscriptionResult{
+		Text:     "Save and load test",
+		Language: "en-US",
+		Duration: 2000 * time.Millisecond,
+		Segments: []Segment{
+			{
+				Text:      "Save and load test",
+				StartTime: 0,
+				EndTime:   2000 * time.Millisecond,
+			},
+		},
+	}
+
+	original := NewTranscript(result, "test-provider", "test-model", "test.wav", nil)
+
+	// Save to file
+	if err := original.SaveJSON(filePath); err != nil {
+		t.Fatalf("SaveJSON() error = %v", err)
+	}
+
+	// Verify file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		t.Fatal("SaveJSON() did not create file")
+	}
+
+	// Load from file
+	loaded, err := LoadTranscript(filePath)
+	if err != nil {
+		t.Fatalf("LoadTranscript() error = %v", err)
+	}
+
+	// Verify loaded content matches original
+	if loaded.Text != original.Text {
+		t.Errorf("loaded.Text = %s, want %s", loaded.Text, original.Text)
+	}
+	if loaded.Duration.Milliseconds() != original.Duration.Milliseconds() {
+		t.Errorf("loaded.Duration = %d, want %d",
+			loaded.Duration.Milliseconds(), original.Duration.Milliseconds())
+	}
+	if loaded.Metadata.Provider != original.Metadata.Provider {
+		t.Errorf("loaded.Metadata.Provider = %s, want %s",
+			loaded.Metadata.Provider, original.Metadata.Provider)
+	}
+}
+
+func TestLoadTranscript_FileNotFound(t *testing.T) {
+	_, err := LoadTranscript("/nonexistent/path/transcript.json")
+	if err == nil {
+		t.Error("LoadTranscript() expected error for nonexistent file")
+	}
+}
+
+func TestLoadTranscript_InvalidJSON(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "invalid.json")
+
+	// Write invalid JSON
+	if err := os.WriteFile(filePath, []byte("not valid json"), 0600); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	_, err := LoadTranscript(filePath)
+	if err == nil {
+		t.Error("LoadTranscript() expected error for invalid JSON")
+	}
+}
+
+func TestNewTranscript_EmptySegments(t *testing.T) {
+	result := &TranscriptionResult{
+		Text:     "No segments",
+		Language: "en-US",
+		Duration: 1000 * time.Millisecond,
+		Segments: []Segment{}, // Empty segments
+	}
+
+	transcript := NewTranscript(result, "provider", "model", "", nil)
+
+	if len(transcript.Segments) != 0 {
+		t.Errorf("len(Segments) = %d, want 0", len(transcript.Segments))
+	}
+	if transcript.Text != "No segments" {
+		t.Errorf("Text = %s, want 'No segments'", transcript.Text)
+	}
+}
+
+func TestNewTranscript_NilConfig(t *testing.T) {
+	result := &TranscriptionResult{
+		Text:     "Test",
+		Duration: 1000 * time.Millisecond,
+	}
+
+	transcript := NewTranscript(result, "provider", "model", "", nil)
+
+	if transcript.Metadata.Options != nil {
+		t.Error("Metadata.Options should be nil when config is nil")
+	}
+}
+
+func TestNewTranscript_EmptyWords(t *testing.T) {
+	result := &TranscriptionResult{
+		Text:     "Segment without words",
+		Duration: 1000 * time.Millisecond,
+		Segments: []Segment{
+			{
+				Text:      "Segment without words",
+				StartTime: 0,
+				EndTime:   1000 * time.Millisecond,
+				Words:     []Word{}, // Empty words
+			},
+		},
+	}
+
+	transcript := NewTranscript(result, "provider", "model", "", nil)
+
+	if len(transcript.Segments) != 1 {
+		t.Fatalf("len(Segments) = %d, want 1", len(transcript.Segments))
+	}
+	if len(transcript.Segments[0].Words) != 0 {
+		t.Errorf("len(Words) = %d, want 0", len(transcript.Segments[0].Words))
+	}
+}
+
+func TestTranscript_ToJSON_Format(t *testing.T) {
+	result := &TranscriptionResult{
+		Text:     "Test",
+		Duration: 1000 * time.Millisecond,
+	}
+
+	transcript := NewTranscript(result, "provider", "model", "", nil)
+	data, err := transcript.ToJSON()
+	if err != nil {
+		t.Fatalf("ToJSON() error = %v", err)
+	}
+
+	// Verify it's indented (pretty-printed)
+	if len(data) == 0 {
+		t.Fatal("ToJSON() returned empty data")
+	}
+
+	// Should contain newlines for indentation
+	if !json.Valid(data) {
+		t.Error("ToJSON() returned invalid JSON")
+	}
+
+	// Verify schema URL is present
+	var parsed map[string]any
+	if err := json.Unmarshal(data, &parsed); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v", err)
+	}
+	if parsed["$schema"] != TranscriptSchemaURL {
+		t.Errorf("$schema = %v, want %s", parsed["$schema"], TranscriptSchemaURL)
 	}
 }
