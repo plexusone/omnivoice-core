@@ -77,11 +77,16 @@ omnivoice/
 │
 ├── stt/                    # Speech-to-Text
 │   ├── stt.go              # Interface definitions
+│   ├── transcript.go       # Canonical Transcript format
 │   ├── whisper/            # OpenAI Whisper
 │   ├── deepgram/           # Deepgram provider
 │   ├── google/             # Google Speech-to-Text
 │   ├── azure/              # Azure Speech
 │   └── assemblyai/         # AssemblyAI provider
+│
+├── schema/                 # Embedded JSON Schemas
+│   ├── schema.go           # //go:embed directives
+│   └── transcript-v1.schema.json  # Transcript format schema
 │
 ├── agent/                  # Voice Agent orchestration
 │   ├── agent.go            # Interface definitions
