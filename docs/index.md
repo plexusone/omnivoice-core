@@ -52,6 +52,7 @@ Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents ac
 - **Observability** - Built-in hooks for TTS/STT instrumentation and call event tracking
 - **Multi-Provider Failover** - CallSystem client with automatic fallback support
 - **Resilient Error Handling** - Smart fallback with error classification and retry logic
+- **Canonical Transcript Format** - Standardized JSON output for STT with embedded schema
 
 ## Package Structure
 
@@ -63,7 +64,12 @@ omnivoice/
 │
 ├── stt/                    # Speech-to-Text
 │   ├── stt.go              # Interface definitions
+│   ├── transcript.go       # Canonical Transcript format
 │   └── providertest/       # Conformance test suite
+│
+├── schema/                 # Embedded JSON Schemas
+│   ├── schema.go           # //go:embed directives
+│   └── transcript-v1.schema.json
 │
 ├── agent/                  # Voice Agent orchestration
 │   ├── agent.go            # Interface definitions
@@ -168,3 +174,28 @@ fixture := providertest.GenerateWAVFixture(1000, 22050)
 ```
 
 See the [Testing with Mocks](testing.md) guide for comprehensive documentation.
+
+## Transcript Format
+
+OmniVoice provides a canonical JSON transcript format for STT output:
+
+```go
+import "github.com/plexusone/omnivoice-core/stt"
+
+// Convert transcription result to canonical format
+transcript := stt.NewTranscript(result, "deepgram", "nova-2", "audio.mp3", config)
+
+// Save as JSON (durations serialize as milliseconds)
+err := transcript.SaveJSON("output.transcript.json")
+
+// Load from JSON
+loaded, err := stt.LoadTranscript("output.transcript.json")
+
+// Access timing information
+fmt.Printf("Duration: %v\n", transcript.TotalDuration())
+for _, seg := range transcript.Segments {
+    fmt.Printf("Segment: %s (%v - %v)\n", seg.Text, seg.Start.Duration(), seg.End.Duration())
+}
+```
+
+See the [v0.9.0 release notes](releases/v0.9.0.md) for full API documentation.
