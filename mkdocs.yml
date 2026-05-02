@@ -1,33 +1,47 @@
 site_name: OmniVoice
-site_url: https://plexusone.github.io/omnivoice/
 site_description: Voice abstraction layer for PlexusOne supporting TTS, STT, and Voice Agents
-site_author: PlexusOne
-
-repo_name: plexusone/omnivoice-core
+site_url: https://plexusone.github.io/omnivoice-core
 repo_url: https://github.com/plexusone/omnivoice-core
+repo_name: plexusone/omnivoice-core
 
 theme:
   name: material
+  custom_dir: docs/overrides
+  palette:
+    # Dark mode first (PlexusOne default)
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
   features:
-    - content.code.copy
     - navigation.sections
     - navigation.expand
     - navigation.top
     - search.highlight
-    - search.suggest
-  palette:
-    - scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+    - content.code.copy
+
+extra_css:
+  - https://plexusone.dev/css/plexusone-mkdocs.css
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
 
 nav:
   - Home: index.md
@@ -55,13 +69,7 @@ nav:
       - v0.2.0: releases/v0.2.0.md
       - v0.1.0: releases/v0.1.0.md
 
-markdown_extensions:
-  - tables
-  - admonition
-  - pymdownx.details
-  - pymdownx.superfences
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.inlinehilite
-  - toc:
-      permalink: true
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/plexusone/omnivoice-core
