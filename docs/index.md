@@ -2,11 +2,6 @@
 
 Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents across multiple providers and transport protocols.
 
-[![Build Status](https://github.com/plexusone/omnivoice-core/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/plexusone/omnivoice-core/actions/workflows/ci.yaml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/plexusone/omnivoice-core)](https://goreportcard.com/report/github.com/plexusone/omnivoice-core)
-[![GoDoc](https://pkg.go.dev/badge/github.com/plexusone/omnivoice-core)](https://pkg.go.dev/github.com/plexusone/omnivoice-core)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/plexusone/omnivoice-core/blob/master/LICENSE)
-
 ## Architecture Overview
 
 ```
