@@ -7,6 +7,68 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.9.0",
+      "date": "2026-05-02",
+      "highlights": [
+        { "description": "Canonical Transcript format for STT output with embedded JSON Schema" },
+        { "description": "DurationMilliseconds type for JSON-friendly duration serialization" }
+      ],
+      "added": [
+        { "description": "Canonical `Transcript` type in `stt` package for standardized STT output across providers", "commit": "af49b8b" },
+        { "description": "`TranscriptSegment` and `TranscriptWord` types with timing information", "commit": "af49b8b" },
+        { "description": "`TranscriptMetadata` for provenance (provider, model, options)", "commit": "af49b8b" },
+        { "description": "`NewTranscript()` constructor from `TranscriptionResult`", "commit": "af49b8b" },
+        { "description": "`LoadTranscript()` and `SaveJSON()` for file I/O", "commit": "af49b8b" },
+        { "description": "`TotalDuration()`, `SegmentDuration()`, `WordDuration()` convenience methods", "commit": "af49b8b" },
+        { "description": "`schema` package with embedded `TranscriptV1Schema` JSON Schema", "commit": "d794eb0" },
+        { "description": "Duration fields use `duration.DurationMilliseconds` for integer millisecond JSON serialization", "commit": "af49b8b" }
+      ],
+      "tests": [
+        { "description": "`TestNewTranscript` validates transcript creation from transcription results", "commit": "92755a8" },
+        { "description": "`TestTranscriptJSONRoundTrip` validates JSON serialization and deserialization", "commit": "92755a8" }
+      ],
+      "dependencies": [
+        { "description": "Added `github.com/grokify/mogo v0.74.3` for `DurationMilliseconds` type", "commit": "0f83fc8" }
+      ]
+    },
+    {
+      "version": "v0.8.0",
+      "date": "2026-04-03",
+      "highlights": [
+        { "description": "New `resilience` package for provider-agnostic error classification and retry logic" },
+        { "description": "Smart fallback in TTS and STT clients - only switch providers on permanent errors" },
+        { "description": "8 error categories for actionable error handling decisions" }
+      ],
+      "added": [
+        { "description": "`resilience` package with error categorization system", "commit": "53a72b1" },
+        { "description": "`ErrorCategory` type with 8 categories: transient, rate_limit, validation, auth, not_found, server, quota, unknown", "commit": "53a72b1" },
+        { "description": "`ErrorInfo` struct with category, retryability, code, message, suggestion, and retry-after hint", "commit": "53a72b1" },
+        { "description": "`ProviderError` type wrapping provider errors with classification metadata", "commit": "53a72b1" },
+        { "description": "`ErrorClassifier` interface for provider-specific error classification", "commit": "53a72b1" },
+        { "description": "`HTTPStatusClassifier` for HTTP status code classification", "commit": "53a72b1" },
+        { "description": "`Retry()` and `RetryWithResult[T]()` generic retry functions with configurable backoff", "commit": "53a72b1" },
+        { "description": "`RetryConfig` with max attempts, backoff strategy, classifier, and OnRetry callback", "commit": "53a72b1" },
+        { "description": "`RetryError` type for exhausted retry attempts with attempt count", "commit": "53a72b1" },
+        { "description": "Backoff strategies: `ExponentialBackoff`, `LinearBackoff`, `ConstantBackoff`, `NoBackoff`", "commit": "53a72b1" },
+        { "description": "`DefaultBackoff()` and `DefaultRetryConfig()` with sensible defaults", "commit": "53a72b1" },
+        { "description": "`IsProviderError()` helper to extract `ProviderError` from error chain", "commit": "53a72b1" },
+        { "description": "`IsRetryable()` helper to check error retryability", "commit": "53a72b1" }
+      ],
+      "changed": [
+        { "description": "TTS client now uses smart fallback - only switches providers on permanent (non-retryable) errors", "commit": "53a72b1" },
+        { "description": "STT client now uses smart fallback - only switches providers on permanent (non-retryable) errors", "commit": "53a72b1" },
+        { "description": "Fallback behavior is now determined by error classification, not error occurrence", "commit": "53a72b1" }
+      ],
+      "documentation": [
+        { "description": "Package documentation with examples in `resilience/doc.go`", "commit": "53a72b1" }
+      ],
+      "tests": [
+        { "description": "44 tests in resilience package covering retry logic, backoff strategies, error types, and categories", "commit": "53a72b1" },
+        { "description": "4 TTS fallback behavior tests in `tts/fallback_test.go`", "commit": "53a72b1" },
+        { "description": "4 STT fallback behavior tests in `stt/fallback_test.go`", "commit": "53a72b1" }
+      ]
+    },
+    {
       "version": "v0.7.0",
       "date": "2026-03-30",
       "highlights": [
