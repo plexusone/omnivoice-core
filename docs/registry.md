@@ -1,15 +1,72 @@
 # Provider Registry
 
-The `registry` package provides types for provider registration and discovery, enabling dynamic provider selection and configuration at runtime.
+OmniVoice provides a **global provider registry** with priority-based registration, enabling provider packages to register themselves via `init()` without circular dependencies.
 
 ## Overview
 
 The registry pattern allows applications to:
 
-- Register provider factories at startup
+- Register provider factories at startup via `init()`
+- Support thin (stdlib-only) vs thick (SDK-based) provider layering
 - Discover available providers at runtime
 - Create providers with unified configuration
 - Support plugin-style extensibility
+
+## Global Registry (v0.11.0+)
+
+The global registry is accessed via package-level functions in `omnivoice-core`:
+
+```go
+import omnivoice "github.com/plexusone/omnivoice-core"
+
+// Registration (typically in provider package init())
+omnivoice.RegisterSTTProvider("deepgram", factory, omnivoice.PriorityThick)
+omnivoice.RegisterTTSProvider("elevenlabs", factory, omnivoice.PriorityThick)
+omnivoice.RegisterCallSystemProvider("twilio", factory, omnivoice.PriorityThick)
+
+// Retrieval
+stt, err := omnivoice.GetSTTProvider("deepgram", registry.WithAPIKey(key))
+tts, err := omnivoice.GetTTSProvider("elevenlabs", registry.WithAPIKey(key))
+
+// Discovery
+names := omnivoice.ListSTTProviders()      // ["deepgram", "openai", ...]
+exists := omnivoice.HasTTSProvider("elevenlabs")
+priority := omnivoice.GetSTTProviderPriority("deepgram")  // 10
+```
+
+### Priority System
+
+Providers register with a priority level. Higher priority overrides lower:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `PriorityThin` | 0 | Stdlib-only implementations (no external dependencies) |
+| `PriorityThick` | 10 | Official SDK implementations (full feature support) |
+
+This enables thin/thick layering:
+
+```go
+// In omnivoice-core (thin provider, stdlib HTTP)
+omnivoice.RegisterSTTProvider("deepgram", thinFactory, omnivoice.PriorityThin)
+
+// In omni-deepgram (thick provider, uses official SDK)
+omnivoice.RegisterSTTProvider("deepgram", thickFactory, omnivoice.PriorityThick)
+
+// Application imports both → thick wins (priority 10 > 0)
+```
+
+### Dependency Architecture
+
+```
+omnivoice-core           ← Core interfaces + global registry
+     ↑
+provider packages        ← Register via init(), depend on omnivoice-core
+(omni-deepgram, etc.)      NOT on omnivoice (avoids circular deps)
+     ↑
+omnivoice               ← Batteries-included (imports all providers)
+```
+
+## Local Registry
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -116,28 +173,33 @@ config := registry.ApplyOptions(
 
 ### Registering Providers
 
-Register provider factories at application startup:
+Provider packages register factories in `init()` with priority:
 
 ```go
+// In omni-elevenlabs/init.go
 import (
+    omnivoice "github.com/plexusone/omnivoice-core"
     "github.com/plexusone/omnivoice-core/registry"
     "github.com/plexusone/omnivoice-core/tts"
 )
 
 func init() {
-    // Register ElevenLabs TTS provider
-    registry.RegisterTTSProvider("elevenlabs", func(cfg registry.ProviderConfig) (tts.Provider, error) {
+    // Register ElevenLabs TTS provider (thick - uses SDK)
+    omnivoice.RegisterTTSProvider("elevenlabs", func(cfg registry.ProviderConfig) (tts.Provider, error) {
         return elevenlabs.New(
             elevenlabs.WithAPIKey(cfg.APIKey),
         )
-    })
+    }, omnivoice.PriorityThick)
+}
 
-    // Register OpenAI TTS provider
-    registry.RegisterTTSProvider("openai", func(cfg registry.ProviderConfig) (tts.Provider, error) {
+// In omni-openai/init.go
+func init() {
+    // Register OpenAI TTS provider (thick - uses SDK)
+    omnivoice.RegisterTTSProvider("openai", func(cfg registry.ProviderConfig) (tts.Provider, error) {
         return openaitts.New(
             openaitts.WithAPIKey(cfg.APIKey),
         )
-    })
+    }, omnivoice.PriorityThick)
 }
 ```
 
@@ -146,8 +208,16 @@ func init() {
 Retrieve providers by name with configuration options:
 
 ```go
+import (
+    omnivoice "github.com/plexusone/omnivoice-core"
+    "github.com/plexusone/omnivoice-core/registry"
+    _ "github.com/plexusone/omni-deepgram"    // Auto-registers "deepgram"
+    _ "github.com/plexusone/omni-elevenlabs"  // Auto-registers "elevenlabs"
+    _ "github.com/plexusone/omni-twilio"      // Auto-registers "twilio"
+)
+
 // Get TTS provider
-ttsProvider, err := registry.GetTTSProvider("elevenlabs",
+ttsProvider, err := omnivoice.GetTTSProvider("elevenlabs",
     registry.WithAPIKey(os.Getenv("ELEVENLABS_API_KEY")),
 )
 if err != nil {
@@ -155,7 +225,7 @@ if err != nil {
 }
 
 // Get STT provider
-sttProvider, err := registry.GetSTTProvider("deepgram",
+sttProvider, err := omnivoice.GetSTTProvider("deepgram",
     registry.WithAPIKey(os.Getenv("DEEPGRAM_API_KEY")),
 )
 if err != nil {
@@ -163,9 +233,9 @@ if err != nil {
 }
 
 // Get CallSystem provider
-callProvider, err := registry.GetCallSystemProvider("twilio",
+callProvider, err := omnivoice.GetCallSystemProvider("twilio",
     registry.WithAPIKey(os.Getenv("TWILIO_AUTH_TOKEN")),
-    registry.WithExtension("account_sid", os.Getenv("TWILIO_ACCOUNT_SID")),
+    registry.WithExtension("accountSID", os.Getenv("TWILIO_ACCOUNT_SID")),
 )
 if err != nil {
     log.Fatal(err)
@@ -178,13 +248,19 @@ Discover what providers are registered:
 
 ```go
 // List all TTS providers
-ttsProviders := registry.ListTTSProviders()
+ttsProviders := omnivoice.ListTTSProviders()
 fmt.Println("Available TTS providers:", ttsProviders)
 // Output: Available TTS providers: [elevenlabs openai google azure]
 
 // Check if a provider exists
-if registry.HasSTTProvider("deepgram") {
+if omnivoice.HasSTTProvider("deepgram") {
     // Use Deepgram
+}
+
+// Check priority (useful for debugging thin/thick layering)
+priority := omnivoice.GetSTTProviderPriority("deepgram")
+if priority == omnivoice.PriorityThick {
+    fmt.Println("Using SDK-based Deepgram provider")
 }
 ```
 

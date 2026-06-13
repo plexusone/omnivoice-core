@@ -165,8 +165,9 @@ omnivoice/
 │   ├── config.go           # InterruptionMode (immediate, after_sentence, disabled)
 │   └── detector.go         # BargeInDetector with TTS/STT integration
 │
-├── registry/               # Provider discovery
-│   ├── registry.go         # Registry interface
+├── registry.go             # Global provider registry (RegisterSTTProvider, etc.)
+├── registry/               # Provider discovery types
+│   ├── registry.go         # Registry interface, factory types
 │   └── options.go          # ProviderConfig, ProviderOption
 │
 ├── subtitle/               # Subtitle generation
