@@ -28,13 +28,13 @@ func EncodeWAV(samples []int16, sampleRate int, channels int) []byte {
 
 	// fmt subchunk
 	copy(wav[12:16], "fmt ")
-	binary.LittleEndian.PutUint32(wav[16:20], 16)                                          // Subchunk1Size (16 for PCM)
-	binary.LittleEndian.PutUint16(wav[20:22], 1)                                           // AudioFormat (1 = PCM)
-	binary.LittleEndian.PutUint16(wav[22:24], uint16(channels))                            //nolint:gosec // G115: channels is 1 or 2
-	binary.LittleEndian.PutUint32(wav[24:28], uint32(sampleRate))                          //nolint:gosec // G115: sample rate is bounded
-	binary.LittleEndian.PutUint32(wav[28:32], uint32(sampleRate*channels*bytesPerSample))  //nolint:gosec // G115: byte rate is bounded
-	binary.LittleEndian.PutUint16(wav[32:34], uint16(channels*bytesPerSample))             //nolint:gosec // G115: block align is small
-	binary.LittleEndian.PutUint16(wav[34:36], uint16(bitsPerSample))                       //nolint:gosec // G115: bits per sample is 16
+	binary.LittleEndian.PutUint32(wav[16:20], 16)                                         // Subchunk1Size (16 for PCM)
+	binary.LittleEndian.PutUint16(wav[20:22], 1)                                          // AudioFormat (1 = PCM)
+	binary.LittleEndian.PutUint16(wav[22:24], uint16(channels))                           //nolint:gosec // G115: channels is 1 or 2
+	binary.LittleEndian.PutUint32(wav[24:28], uint32(sampleRate))                         //nolint:gosec // G115: sample rate is bounded
+	binary.LittleEndian.PutUint32(wav[28:32], uint32(sampleRate*channels*bytesPerSample)) //nolint:gosec // G115: byte rate is bounded
+	binary.LittleEndian.PutUint16(wav[32:34], uint16(channels*bytesPerSample))            //nolint:gosec // G115: block align is small
+	binary.LittleEndian.PutUint16(wav[34:36], uint16(bitsPerSample))                      //nolint:gosec // G115: bits per sample is 16
 
 	// data subchunk
 	copy(wav[36:40], "data")
