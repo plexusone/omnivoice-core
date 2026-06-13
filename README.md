@@ -27,6 +27,37 @@
 
 Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents across multiple providers and transport protocols.
 
+## Voice Architecture: Traditional vs Native
+
+OmniVoice supports two fundamentally different approaches for real-time voice:
+
+### Traditional Pipeline (STT → LLM → TTS)
+
+```
+Audio In → [STT Provider] → Text → [LLM] → Text → [TTS Provider] → Audio Out
+```
+
+- **Latency**: 500-1500ms (sum of STT + LLM + TTS)
+- **Flexibility**: Mix and match any STT, LLM, and TTS providers
+- **Use case**: Custom voice selection, specialized STT for domain-specific terminology
+
+### Native Voice-to-Voice
+
+```
+Audio In → [OpenAI Realtime / Gemini Live] → Audio Out
+```
+
+- **Latency**: 100-200ms (model handles audio directly)
+- **Simplicity**: Single API, no separate STT/TTS configuration
+- **Use case**: Low-latency conversations, natural barge-in handling
+
+| Aspect | Traditional | Native Voice-to-Voice |
+|--------|-------------|----------------------|
+| Latency | 500-1500ms | 100-200ms |
+| STT/TTS Config | Required | Built-in |
+| Provider Packages | `tts/`, `stt/` | `omni-openai/omnivoice/realtime`, `omni-google/omnivoice` |
+| Barge-in | Via `bargein/` package | Native support |
+
 ## Architecture Overview
 
 ```
@@ -57,7 +88,7 @@ Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents ac
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
 │  │                      Call System Integration                        │    │
 │  ├─────────────┬─────────────┬─────────────┬─────────────┬─────────────┤    │
-│  │   Twilio    │ RingCentral │    Zoom     │   LiveKit   │   Daily     │    │
+│  │   Twilio    │   Telnyx    │   Vonage    │    Plivo    │   LiveKit   │    │
 │  └─────────────┴─────────────┴─────────────┴─────────────┴─────────────┘    │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -124,6 +155,16 @@ omnivoice/
 │   ├── retry.go            # Retry and RetryWithResult functions
 │   └── backoff.go          # Backoff strategies (exponential, linear, etc.)
 │
+├── storage/                # Session state persistence
+│   ├── store.go            # SessionStore interface
+│   ├── types.go            # SessionState, Turn, Metrics types
+│   ├── memory.go           # In-memory implementation
+│   └── redis.go            # Redis implementation
+│
+├── bargein/                # Barge-in detection
+│   ├── config.go           # InterruptionMode (immediate, after_sentence, disabled)
+│   └── detector.go         # BargeInDetector with TTS/STT integration
+│
 ├── registry/               # Provider discovery
 │   ├── registry.go         # Registry interface
 │   └── options.go          # ProviderConfig, ProviderOption
@@ -137,6 +178,55 @@ omnivoice/
     └── multi-provider/     # Provider fallback example
 ```
 
+## Voice Gateway Interfaces
+
+OmniVoice provides two gateway interfaces for different use cases:
+
+### `Gateway` - PSTN Phone Calls
+
+For traditional phone calls via Twilio, Telnyx, Vonage, or Plivo:
+
+```go
+type Gateway interface {
+    Name() ProviderName
+    Start(ctx context.Context) error
+    Stop() error
+    OnCall(handler CallHandler)              // Phone call comes in
+    MakeCall(ctx, to string) (Session, error) // Dial phone number
+    GetSession(callID string) (Session, bool)
+    ListSessions() []Session
+}
+```
+
+### `WebRTCGateway` - Browser/Mobile Apps
+
+For WebRTC-based voice via LiveKit, Daily, etc.:
+
+```go
+type WebRTCGateway interface {
+    Name() ProviderName
+    Start(ctx context.Context) error
+    Stop() error
+    OnParticipantJoined(handler ParticipantHandler) // User joins room
+    JoinRoom(ctx, roomName string) error
+    LeaveRoom() error
+    CurrentRoom() string
+    GetSession(participantID string) (WebRTCSession, bool)
+    ListSessions() []WebRTCSession
+    GenerateClientToken(roomName, identity, displayName string) (string, error)
+}
+```
+
+### Comparison
+
+| Aspect | `Gateway` (PSTN) | `WebRTCGateway` |
+|--------|------------------|-----------------|
+| Connection | Phone number | Room name |
+| Incoming | `OnCall()` | `OnParticipantJoined()` |
+| Outgoing | `MakeCall(phoneNumber)` | `JoinRoom(roomName)` |
+| Latency | 500ms+ | <200ms |
+| Clients | Phone calls | Browser/mobile apps |
+
 ## Call System Integration
 
 ### How Voice Agents Connect to Phone/Video Calls
@@ -145,19 +235,27 @@ Voice AI agents need a **transport layer** to receive and send audio. The choice
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
-│                        Call System Options                            │
+│                   Voice Gateway Providers (Bidirectional)             │
+├────────────────┬───────────────┬─────────────────┬────────────────────┤
+│    Platform    │   Protocol    │   Audio Format  │   Auth Method      │
+├────────────────┼───────────────┼─────────────────┼────────────────────┤
+│ Twilio         │ Media Streams │ mulaw 8kHz      │ Account SID/Token  │
+│ Media Streams  │ WebSocket     │                 │                    │
+├────────────────┼───────────────┼─────────────────┼────────────────────┤
+│ Telnyx         │ Media         │ L16 16kHz       │ API Key            │
+│ Media Streaming│ WebSocket     │                 │                    │
+├────────────────┼───────────────┼─────────────────┼────────────────────┤
+│ Vonage         │ Voice         │ L16 16kHz       │ JWT (RS256)        │
+│ Voice WebSocket│ WebSocket     │                 │                    │
+├────────────────┼───────────────┼─────────────────┼────────────────────┤
+│ Plivo          │ Stream API    │ L16 16kHz       │ Auth ID/Token      │
+│ Audio Streaming│ WebSocket     │                 │                    │
+└────────────────┴───────────────┴─────────────────┴────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────┐
+│                     Other Call System Options                         │
 ├────────────────┬───────────────┬─────────────────┬────────────────────┤
 │    Platform    │   Protocol    │   Best For      │   Complexity       │
-├────────────────┼───────────────┼─────────────────┼────────────────────┤
-│ Twilio         │ WebRTC/SIP/   │ Phone calls,    │ Medium - managed   │
-│ Conversation-  │ PSTN          │ IVR, call       │ infrastructure     │
-│ Relay          │               │ centers         │                    │
-├────────────────┼───────────────┼─────────────────┼────────────────────┤
-│ RingCentral    │ WebRTC/SIP    │ Enterprise PBX, │ Medium - native    │
-│ Voice API      │               │ business phones │ AI receptionist    │
-├────────────────┼───────────────┼─────────────────┼────────────────────┤
-│ Zoom SDK       │ Proprietary   │ Video meetings  │ High - requires    │
-│                │ (via SDK)     │ with voice bots │ native SDK         │
 ├────────────────┼───────────────┼─────────────────┼────────────────────┤
 │ LiveKit        │ WebRTC        │ Custom apps,    │ Low - open source  │
 │                │               │ real-time AI    │ WebRTC rooms       │
@@ -174,15 +272,15 @@ Voice AI agents need a **transport layer** to receive and send audio. The choice
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────┐
-│                     PSTN/WebRTC Call Flow                                      │
+│                     PSTN/WebSocket Call Flow                                   │
 │                                                                                │
 │   ┌─────────┐         ┌─────────────┐          ┌───────────────────────────┐   │
-│   │  User   │◄───────►│   Twilio    │◄────────►│        OmniVoice          │   │
-│   │ (Phone) │  PSTN   │ Conversation│ WebSocket│                           │   │
-│   │         │         │   Relay     │          │  ┌─────────────────────┐  │   │
-│   └─────────┘         └─────────────┘          │  │   Voice Agent       │  │   │
-│                                                │  │                     │  │   │
-│                                                │  │  ┌───────┐          │  │   │
+│   │  User   │◄───────►│  Provider   │◄────────►│        OmniVoice          │   │
+│   │ (Phone) │  PSTN   │  (Twilio/   │ WebSocket│                           │   │
+│   │         │         │   Telnyx/   │          │  ┌─────────────────────┐  │   │
+│   └─────────┘         │   Vonage/   │          │  │   Voice Agent       │  │   │
+│                       │   Plivo)    │          │  │                     │  │   │
+│                       └─────────────┘          │  │  ┌───────┐          │  │   │
 │                         Audio In ─────────────►│  │  │  STT  │──┐       │  │   │
 │                                                │  │  └───────┘  │       │  │   │
 │                                                │  │             ▼       │  │   │
@@ -243,10 +341,10 @@ Voice AI agents need a **transport layer** to receive and send audio. The choice
 
 | Use Case | Call System | Transport | Notes |
 |----------|-------------|-----------|-------|
-| **IVR / Call Center** | Twilio ConversationRelay | PSTN/SIP | Best managed solution |
-| **Business Phone** | RingCentral | WebRTC/SIP | Native AI Receptionist available |
+| **IVR / Call Center** | Twilio, Telnyx, Plivo | PSTN/WebSocket | Managed infrastructure |
+| **International Calls** | Plivo, Vonage | PSTN/WebSocket | Good international rates |
+| **Enterprise Voice** | Vonage, Telnyx | PSTN/WebSocket | Flexible call control |
 | **Custom Web App** | LiveKit or Daily | WebRTC | Open source, flexible |
-| **Zoom Meetings** | Recall.ai + Zoom | SDK → WebSocket | Avoid building Zoom bot yourself |
 | **Browser Widget** | Direct WebSocket | WebSocket | ElevenLabs widget or custom |
 | **Mobile App** | LiveKit | WebRTC | Cross-platform support |
 
@@ -383,11 +481,37 @@ mock := providertest.NewMockProviderWithOptions(
 fixture := providertest.GenerateWAVFixture(1000, 22050)  // 1 second at 22050 Hz
 ```
 
+## Native Voice-to-Voice Providers
+
+For lowest latency, use native voice-to-voice APIs that bypass traditional STT/TTS:
+
+| Provider | Package | Latency | Audio Format |
+|----------|---------|---------|--------------|
+| **OpenAI Realtime** | [`omni-openai/omnivoice/realtime`](https://github.com/plexusone/omni-openai) | ~100ms | PCM16 24kHz |
+| **Gemini Live** | [`omni-google/omnivoice`](https://github.com/plexusone/omni-google) | ~200ms | PCM16 16kHz in, 24kHz out |
+
+These providers implement the `RealtimeProvider` interface:
+
+```go
+type RealtimeProvider interface {
+    ProcessAudioStream(
+        ctx context.Context,
+        audioIn <-chan []byte,
+        config ProcessConfig,
+    ) (<-chan AudioChunk, <-chan Transcript, error)
+    Name() string
+}
+```
+
 ## Resources
 
-### Call Systems
-- [Twilio ConversationRelay](https://www.twilio.com/en-us/blog/developers/tutorials/product/voice-ai-conversationrelay-twilio-voice-sdk)
-- [RingCentral Voice API](https://developers.ringcentral.com/voice-api)
+### Voice Gateway Providers
+- [Twilio Media Streams](https://www.twilio.com/docs/voice/media-streams)
+- [Telnyx Media Streaming](https://developers.telnyx.com/docs/voice/programmable-voice/media-streaming)
+- [Vonage Voice WebSocket](https://developer.vonage.com/en/voice/voice-api/guides/websockets)
+- [Plivo Audio Streaming](https://www.plivo.com/docs/voice/api/stream/)
+
+### Other Call Systems
 - [LiveKit Voice AI](https://livekit.io/)
 - [Daily.co](https://www.daily.co/)
 - [Recall.ai](https://www.recall.ai/) - Meeting bot infrastructure

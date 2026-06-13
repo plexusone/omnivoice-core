@@ -30,9 +30,10 @@ Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents ac
 │  └─────────────┴─────────────┴─────────────┴─────────────┴─────────────┘    │
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                      Call System Integration                        │    │
+│  │               Voice Gateways (PSTN + WebRTC)                        │    │
 │  ├─────────────┬─────────────┬─────────────┬─────────────┬─────────────┤    │
-│  │   Twilio    │ RingCentral │    Zoom     │   LiveKit   │   Daily     │    │
+│  │   Twilio    │   Telnyx    │   Vonage    │    Plivo    │   LiveKit   │    │
+│  │   (PSTN)    │   (PSTN)    │   (PSTN)    │   (PSTN)    │  (WebRTC)   │    │
 │  └─────────────┴─────────────┴─────────────┴─────────────┴─────────────┘    │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -72,6 +73,10 @@ omnivoice/
 │
 ├── transport/              # Audio transport protocols
 │   └── transport.go        # Interface definitions
+│
+├── gateway/                # Voice gateway interfaces
+│   ├── gateway.go          # Gateway (PSTN) interface
+│   └── webrtc.go           # WebRTCGateway interface
 │
 ├── callsystem/             # Call system integrations
 │   ├── callsystem.go       # Interface definitions

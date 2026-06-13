@@ -50,11 +50,14 @@ nav:
       - Twilio Integration TRD: twilio-integration-trd.md
       - Provider Conformance Testing: provider-conformance-testing.md
   - Guides:
+      - Voice Architecture: voice-architecture.md
       - Transcript Format: transcript.md
       - Testing with Mocks: testing.md
       - Observability: observability.md
       - Provider Registry: registry.md
       - Voice Cloning: voice-cloning.md
+      - Session Storage: storage.md
+      - Barge-in Detection: bargein.md
   - Roadmap: roadmap.md
   - Changelog: changelog.md
   - Releases:
