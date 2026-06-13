@@ -7,6 +7,27 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.11.0",
+      "date": "2026-06-13",
+      "highlights": [
+        { "description": "Global provider registry with priority-based registration" },
+        { "description": "Architecture documentation for provider implementation" }
+      ],
+      "added": [
+        { "description": "Global `RegisterSTTProvider()`, `RegisterTTSProvider()`, `RegisterCallSystemProvider()` functions at package level", "commit": "49c11e3" },
+        { "description": "`GetSTTProvider()`, `GetTTSProvider()`, `GetCallSystemProvider()` for retrieving registered providers", "commit": "49c11e3" },
+        { "description": "`ListSTTProviders()`, `ListTTSProviders()`, `ListCallSystemProviders()` for discovering available providers", "commit": "49c11e3" },
+        { "description": "`HasSTTProvider()`, `HasTTSProvider()`, `HasCallSystemProvider()` for checking registration", "commit": "49c11e3" },
+        { "description": "`GetSTTProviderPriority()`, `GetTTSProviderPriority()`, `GetCallSystemProviderPriority()` for querying priority", "commit": "49c11e3" },
+        { "description": "`PriorityThin` (0) and `PriorityThick` (10) constants for provider layering", "commit": "49c11e3" }
+      ],
+      "documentation": [
+        { "description": "CLAUDE.md with provider registry architecture and implementation guidelines", "commit": "51f6883" },
+        { "description": "Dependency architecture diagram (omnivoice-core → providers → omnivoice)", "commit": "51f6883" },
+        { "description": "Step-by-step guide for adding new providers", "commit": "51f6883" }
+      ]
+    },
+    {
       "version": "v0.10.0",
       "date": "2026-06-13",
       "highlights": [
