@@ -7,6 +7,45 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.10.0",
+      "date": "2026-06-13",
+      "highlights": [
+        { "description": "Voice Gateway interface for provider-agnostic PSTN and WebRTC communication" },
+        { "description": "Session persistence with in-memory and Redis backends" },
+        { "description": "Barge-in detection for user interruption handling" }
+      ],
+      "added": [
+        { "description": "`gateway` package with `Gateway` interface for PSTN telephony providers (Twilio, Telnyx, Vonage, Plivo)", "commit": "8f375df" },
+        { "description": "`WebRTCGateway` interface for browser/mobile voice (LiveKit, Daily)", "commit": "8f375df" },
+        { "description": "`Session` and `WebRTCSession` interfaces for active call management", "commit": "8f375df" },
+        { "description": "Event types for call lifecycle: `SessionStarted`, `SessionEnded`, `UserSpeechStart`, `AgentSpeechStart`, `Interruption`, etc.", "commit": "8f375df" },
+        { "description": "`storage` package with `SessionStore` interface for call state persistence", "commit": "b1c8cf9" },
+        { "description": "`MemoryStore` for in-process session storage", "commit": "b1c8cf9" },
+        { "description": "`RedisStore` for distributed session storage with configurable TTL", "commit": "b1c8cf9" },
+        { "description": "`SessionState` type with conversation history, metrics, and recovery data", "commit": "b1c8cf9" },
+        { "description": "`bargein` package with `Detector` for user interruption detection", "commit": "0ab0e4b" },
+        { "description": "Interruption modes: `ModeImmediate`, `ModeAfterSentence`, `ModeDisabled`", "commit": "0ab0e4b" },
+        { "description": "Automatic TTS cancellation on user speech detection", "commit": "0ab0e4b" },
+        { "description": "`MulawToWAV()` function in `audio/codec` for WAV container encoding", "commit": "4a34433" }
+      ],
+      "documentation": [
+        { "description": "Voice architecture guide with system design overview", "commit": "b2b6215" },
+        { "description": "Barge-in detection usage guide", "commit": "b2b6215" },
+        { "description": "Session storage configuration guide", "commit": "b2b6215" }
+      ],
+      "changed": [
+        { "description": "Twilio example moved to `omni-twilio` repository", "commit": "26d2703" }
+      ],
+      "dependencies": [
+        { "description": "Added `github.com/redis/go-redis/v9` for Redis session storage", "commit": "b1c8cf9" },
+        { "description": "Bump `github.com/grokify/mogo` from 0.74.3 to 0.74.6", "commit": "e22b0e9" }
+      ],
+      "tests": [
+        { "description": "Storage interface conformance tests for MemoryStore and RedisStore", "commit": "b1c8cf9" },
+        { "description": "Barge-in detector tests for interruption modes and timing", "commit": "0ab0e4b" }
+      ]
+    },
+    {
       "version": "v0.9.0",
       "date": "2026-05-02",
       "highlights": [
