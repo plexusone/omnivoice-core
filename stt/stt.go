@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/plexusone/omnivoice-core/observability"
+	"github.com/plexusone/omnivoice-core/provider"
 	"github.com/plexusone/omnivoice-core/resilience"
 )
 
@@ -183,36 +184,15 @@ type StreamingProvider interface {
 
 // Client provides a unified interface across multiple STT providers.
 type Client struct {
-	providers map[string]Provider
-	primary   string
-	fallbacks []string
-	hook      observability.STTHook
+	*provider.Client[Provider]
+	hook observability.STTHook
 }
 
 // NewClient creates a new STT client with the specified providers.
 func NewClient(providers ...Provider) *Client {
-	c := &Client{
-		providers: make(map[string]Provider),
+	return &Client{
+		Client: provider.NewClient(providers...),
 	}
-	for i, p := range providers {
-		c.providers[p.Name()] = p
-		if i == 0 {
-			c.primary = p.Name()
-		} else {
-			c.fallbacks = append(c.fallbacks, p.Name())
-		}
-	}
-	return c
-}
-
-// SetPrimary sets the primary provider by name.
-func (c *Client) SetPrimary(name string) {
-	c.primary = name
-}
-
-// SetFallbacks sets the fallback provider order.
-func (c *Client) SetFallbacks(names ...string) {
-	c.fallbacks = names
 }
 
 // SetHook sets the observability hook for all STT operations.
@@ -223,12 +203,6 @@ func (c *Client) SetHook(hook observability.STTHook) {
 // Hook returns the current observability hook.
 func (c *Client) Hook() observability.STTHook {
 	return c.hook
-}
-
-// Provider returns a specific provider by name.
-func (c *Client) Provider(name string) (Provider, bool) {
-	p, ok := c.providers[name]
-	return p, ok
 }
 
 // Transcribe uses the primary provider with smart fallback.
@@ -243,7 +217,7 @@ func (c *Client) Transcribe(ctx context.Context, audio []byte, config Transcript
 	var lastErr error
 
 	// Try primary provider
-	if p, ok := c.providers[c.primary]; ok {
+	if p, ok := c.Primary(); ok {
 		result, err := p.Transcribe(ctx, audio, config)
 		if err == nil {
 			return result, nil
@@ -253,17 +227,15 @@ func (c *Client) Transcribe(ctx context.Context, audio []byte, config Transcript
 		// Only fallback on permanent errors (non-retryable)
 		if shouldFallback(err) {
 			// Try fallbacks
-			for _, name := range c.fallbacks {
-				if p, ok := c.providers[name]; ok {
-					result, err := p.Transcribe(ctx, audio, config)
-					if err == nil {
-						return result, nil
-					}
-					lastErr = err
-					// Continue to next fallback only on permanent errors
-					if !shouldFallback(err) {
-						break
-					}
+			for _, p := range c.Fallbacks() {
+				result, err := p.Transcribe(ctx, audio, config)
+				if err == nil {
+					return result, nil
+				}
+				lastErr = err
+				// Continue to next fallback only on permanent errors
+				if !shouldFallback(err) {
+					break
 				}
 			}
 		}
@@ -286,7 +258,7 @@ func (c *Client) TranscribeStream(ctx context.Context, config TranscriptionConfi
 	var lastErr error
 
 	// Try primary provider
-	if p, ok := c.providers[c.primary]; ok {
+	if p, ok := c.Primary(); ok {
 		if sp, ok := p.(StreamingProvider); ok {
 			w, ch, err := sp.TranscribeStream(ctx, config)
 			if err == nil {
@@ -297,17 +269,15 @@ func (c *Client) TranscribeStream(ctx context.Context, config TranscriptionConfi
 			// Only fallback on permanent errors
 			if shouldFallback(err) {
 				// Try fallbacks
-				for _, name := range c.fallbacks {
-					if p, ok := c.providers[name]; ok {
-						if sp, ok := p.(StreamingProvider); ok {
-							w, ch, err := sp.TranscribeStream(ctx, config)
-							if err == nil {
-								return w, ch, nil
-							}
-							lastErr = err
-							if !shouldFallback(err) {
-								break
-							}
+				for _, p := range c.Fallbacks() {
+					if sp, ok := p.(StreamingProvider); ok {
+						w, ch, err := sp.TranscribeStream(ctx, config)
+						if err == nil {
+							return w, ch, nil
+						}
+						lastErr = err
+						if !shouldFallback(err) {
+							break
 						}
 					}
 				}
