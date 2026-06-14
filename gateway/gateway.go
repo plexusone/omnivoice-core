@@ -40,6 +40,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/plexusone/omnivoice-core/audio/format"
 	"github.com/plexusone/omnivoice-core/realtime"
 )
 
@@ -311,39 +312,31 @@ type RealtimeProviderFactory interface {
 	Name() string
 }
 
-// AudioFormat describes an audio format for conversion.
-type AudioFormat struct {
-	// Encoding is the audio encoding ("pcm16", "mulaw", "alaw").
-	Encoding string
+// AudioFormat is an alias for format.AudioFormat.
+// Deprecated: Use format.AudioFormat directly.
+type AudioFormat = format.AudioFormat
 
-	// SampleRate is the sample rate in Hz (8000, 16000, 24000).
-	SampleRate int
-
-	// Channels is the number of audio channels (1 = mono, 2 = stereo).
-	Channels int
-}
-
-// Common audio formats used in voice gateways.
+// Common audio formats - re-exported from format package for convenience.
 var (
 	// AudioFormatTwilio is Twilio's native format (mulaw 8kHz mono).
-	AudioFormatTwilio = AudioFormat{Encoding: "mulaw", SampleRate: 8000, Channels: 1}
+	AudioFormatTwilio = format.Twilio
 
 	// AudioFormatTelnyx is Telnyx's native format (mulaw 8kHz mono).
-	AudioFormatTelnyx = AudioFormat{Encoding: "mulaw", SampleRate: 8000, Channels: 1}
+	AudioFormatTelnyx = format.Telnyx
 
 	// AudioFormatOpenAI is OpenAI Realtime's format (PCM16 24kHz mono).
-	AudioFormatOpenAI = AudioFormat{Encoding: "pcm16", SampleRate: 24000, Channels: 1}
+	AudioFormatOpenAI = format.OpenAI
 
 	// AudioFormatGeminiInput is Gemini Live's input format (PCM16 16kHz mono).
-	AudioFormatGeminiInput = AudioFormat{Encoding: "pcm16", SampleRate: 16000, Channels: 1}
+	AudioFormatGeminiInput = format.GeminiInput
 
 	// AudioFormatGeminiOutput is Gemini Live's output format (PCM16 24kHz mono).
-	AudioFormatGeminiOutput = AudioFormat{Encoding: "pcm16", SampleRate: 24000, Channels: 1}
+	AudioFormatGeminiOutput = format.GeminiOutput
 )
 
 // AudioConverter converts audio between formats.
 // Used to bridge telephony audio (mulaw 8kHz) with realtime providers (PCM16 16/24kHz).
 type AudioConverter interface {
 	// Convert converts audio from the source format to the target format.
-	Convert(audio []byte, from, to AudioFormat) ([]byte, error)
+	Convert(audio []byte, from, to format.AudioFormat) ([]byte, error)
 }
