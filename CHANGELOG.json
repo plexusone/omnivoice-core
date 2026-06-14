@@ -7,6 +7,37 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.12.0",
+      "date": "2026-06-14",
+      "highlights": [
+        { "description": "Realtime Provider interface for native voice-to-voice LLMs (OpenAI Realtime, Gemini Live)" },
+        { "description": "Audio format conversion between telephony (mulaw 8kHz) and realtime providers (PCM16 16/24kHz)" },
+        { "description": "RealtimeBridge for seamless telephony-to-realtime provider integration" },
+        { "description": "Dual pipeline modes: text (STT→LLM→TTS) or realtime (voice-to-voice)" }
+      ],
+      "added": [
+        { "description": "`realtime` package with `Provider` interface for voice-to-voice LLM providers", "commit": "55c873a" },
+        { "description": "`ProcessConfig` with instructions, voice, functions, and callbacks", "commit": "55c873a" },
+        { "description": "`AudioChunk` and `Transcript` types for provider output", "commit": "55c873a" },
+        { "description": "`FunctionDeclaration` for model function calling", "commit": "55c873a" },
+        { "description": "`Client` for multi-provider management with automatic fallback", "commit": "226915d" },
+        { "description": "`audio/format` package with common audio format constants (Twilio, OpenAI, Gemini)", "commit": "4d1b2e2" },
+        { "description": "`audio/converter` package for audio format conversion", "commit": "4e4d1b6" },
+        { "description": "`TwilioToOpenAI()`, `OpenAIToTwilio()`, `TwilioToGemini()`, `GeminiToTwilio()` convenience functions", "commit": "4e4d1b6" },
+        { "description": "`StreamConverter` for efficient streaming audio conversion", "commit": "4e4d1b6" },
+        { "description": "`PipelineMode` type with `PipelineModeText` and `PipelineModeRealtime` constants", "commit": "235584e" },
+        { "description": "`RealtimeConfig` for configuring realtime providers", "commit": "235584e" },
+        { "description": "`RealtimeProviderFactory` interface for creating realtime providers from config", "commit": "235584e" },
+        { "description": "`RealtimeBridge` for bridging telephony WebSocket to realtime providers", "commit": "df38137" },
+        { "description": "`NewRealtimeBridgeForTwilio()` and `NewRealtimeBridgeForTwilioGemini()` convenience constructors", "commit": "df38137" }
+      ],
+      "tests": [
+        { "description": "Unit tests for `realtime.Provider` interface and `Client`", "commit": "c009f3d" },
+        { "description": "Tests for `audio/converter` with codec and sample rate conversion", "commit": "4e4d1b6" },
+        { "description": "Tests for `RealtimeBridge` lifecycle and event handling", "commit": "df38137" }
+      ]
+    },
+    {
       "version": "v0.11.0",
       "date": "2026-06-13",
       "highlights": [
