@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/plexusone/omnivoice-core/observability"
+	"github.com/plexusone/omnivoice-core/provider"
 	"github.com/plexusone/omnivoice-core/resilience"
 )
 
@@ -125,36 +126,15 @@ type StreamingProvider interface {
 
 // Client provides a unified interface across multiple TTS providers.
 type Client struct {
-	providers map[string]Provider
-	primary   string
-	fallbacks []string
-	hook      observability.TTSHook
+	*provider.Client[Provider]
+	hook observability.TTSHook
 }
 
 // NewClient creates a new TTS client with the specified providers.
 func NewClient(providers ...Provider) *Client {
-	c := &Client{
-		providers: make(map[string]Provider),
+	return &Client{
+		Client: provider.NewClient(providers...),
 	}
-	for i, p := range providers {
-		c.providers[p.Name()] = p
-		if i == 0 {
-			c.primary = p.Name()
-		} else {
-			c.fallbacks = append(c.fallbacks, p.Name())
-		}
-	}
-	return c
-}
-
-// SetPrimary sets the primary provider by name.
-func (c *Client) SetPrimary(name string) {
-	c.primary = name
-}
-
-// SetFallbacks sets the fallback provider order.
-func (c *Client) SetFallbacks(names ...string) {
-	c.fallbacks = names
 }
 
 // SetHook sets the observability hook for all TTS operations.
@@ -165,12 +145,6 @@ func (c *Client) SetHook(hook observability.TTSHook) {
 // Hook returns the current observability hook.
 func (c *Client) Hook() observability.TTSHook {
 	return c.hook
-}
-
-// Provider returns a specific provider by name.
-func (c *Client) Provider(name string) (Provider, bool) {
-	p, ok := c.providers[name]
-	return p, ok
 }
 
 // Synthesize uses the primary provider with smart fallback.
@@ -185,7 +159,7 @@ func (c *Client) Synthesize(ctx context.Context, text string, config SynthesisCo
 	var lastErr error
 
 	// Try primary provider
-	if p, ok := c.providers[c.primary]; ok {
+	if p, ok := c.Primary(); ok {
 		result, err := p.Synthesize(ctx, text, config)
 		if err == nil {
 			return result, nil
@@ -196,17 +170,15 @@ func (c *Client) Synthesize(ctx context.Context, text string, config SynthesisCo
 		// If the error is retryable, the provider's retry logic should have exhausted attempts
 		if shouldFallback(err) {
 			// Try fallbacks
-			for _, name := range c.fallbacks {
-				if p, ok := c.providers[name]; ok {
-					result, err := p.Synthesize(ctx, text, config)
-					if err == nil {
-						return result, nil
-					}
-					lastErr = err
-					// Continue to next fallback only on permanent errors
-					if !shouldFallback(err) {
-						break
-					}
+			for _, p := range c.Fallbacks() {
+				result, err := p.Synthesize(ctx, text, config)
+				if err == nil {
+					return result, nil
+				}
+				lastErr = err
+				// Continue to next fallback only on permanent errors
+				if !shouldFallback(err) {
+					break
 				}
 			}
 		}
@@ -229,7 +201,7 @@ func (c *Client) SynthesizeStream(ctx context.Context, text string, config Synth
 	var lastErr error
 
 	// Try primary provider
-	if p, ok := c.providers[c.primary]; ok {
+	if p, ok := c.Primary(); ok {
 		stream, err := p.SynthesizeStream(ctx, text, config)
 		if err == nil {
 			return stream, nil
@@ -239,16 +211,14 @@ func (c *Client) SynthesizeStream(ctx context.Context, text string, config Synth
 		// Only fallback on permanent errors
 		if shouldFallback(err) {
 			// Try fallbacks
-			for _, name := range c.fallbacks {
-				if p, ok := c.providers[name]; ok {
-					stream, err := p.SynthesizeStream(ctx, text, config)
-					if err == nil {
-						return stream, nil
-					}
-					lastErr = err
-					if !shouldFallback(err) {
-						break
-					}
+			for _, p := range c.Fallbacks() {
+				stream, err := p.SynthesizeStream(ctx, text, config)
+				if err == nil {
+					return stream, nil
+				}
+				lastErr = err
+				if !shouldFallback(err) {
+					break
 				}
 			}
 		}
