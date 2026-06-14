@@ -33,3 +33,12 @@ var (
 	// GeminiOutput is Gemini Live's output format (PCM16 24kHz mono).
 	GeminiOutput = AudioFormat{Encoding: "pcm16", SampleRate: 24000, Channels: 1}
 )
+
+// Encoding-based aliases for provider-agnostic usage.
+var (
+	// PCM16_24kHz is PCM16 24kHz mono.
+	PCM16_24kHz = OpenAI
+
+	// PCM16_16kHz is PCM16 16kHz mono.
+	PCM16_16kHz = GeminiInput
+)

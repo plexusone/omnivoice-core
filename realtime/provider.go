@@ -118,24 +118,3 @@ func (t Transcript) Role() string {
 	}
 	return "assistant"
 }
-
-// AudioFormat describes the audio encoding parameters.
-type AudioFormat struct {
-	// Encoding is the audio encoding ("pcm16", "mulaw", "alaw").
-	Encoding string
-
-	// SampleRate is the sample rate in Hz (e.g., 16000, 24000).
-	SampleRate int
-
-	// Channels is the number of audio channels (1 = mono, 2 = stereo).
-	Channels int
-}
-
-// Common audio formats used by real-time providers.
-var (
-	// FormatPCM16_24kHz is PCM16 24kHz mono, used by OpenAI Realtime.
-	FormatPCM16_24kHz = AudioFormat{Encoding: "pcm16", SampleRate: 24000, Channels: 1}
-
-	// FormatPCM16_16kHz is PCM16 16kHz mono, used by Gemini Live input.
-	FormatPCM16_16kHz = AudioFormat{Encoding: "pcm16", SampleRate: 16000, Channels: 1}
-)

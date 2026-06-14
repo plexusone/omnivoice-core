@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+
+	"github.com/plexusone/omnivoice-core/audio/format"
 )
 
 // mockProvider is a mock implementation for testing.
@@ -153,11 +155,11 @@ func TestTranscript(t *testing.T) {
 }
 
 func TestAudioFormat(t *testing.T) {
-	if FormatPCM16_24kHz.SampleRate != 24000 {
-		t.Errorf("expected 24000, got %d", FormatPCM16_24kHz.SampleRate)
+	if format.PCM16_24kHz.SampleRate != 24000 {
+		t.Errorf("expected 24000, got %d", format.PCM16_24kHz.SampleRate)
 	}
-	if FormatPCM16_16kHz.SampleRate != 16000 {
-		t.Errorf("expected 16000, got %d", FormatPCM16_16kHz.SampleRate)
+	if format.PCM16_16kHz.SampleRate != 16000 {
+		t.Errorf("expected 16000, got %d", format.PCM16_16kHz.SampleRate)
 	}
 }
 
