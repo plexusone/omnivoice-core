@@ -55,7 +55,9 @@ Audio In → [OpenAI Realtime / Gemini Live] → Audio Out
 |--------|-------------|----------------------|
 | Latency | 500-1500ms | 100-200ms |
 | STT/TTS Config | Required | Built-in |
-| Provider Packages | `tts/`, `stt/` | `omni-openai/omnivoice/realtime`, `omni-google/omnivoice` |
+| Core Interface | `stt.Provider`, `tts.Provider` | `realtime.Provider` |
+| Provider Packages | `tts/`, `stt/` | `omni-openai/omnivoice/realtime`, `omni-google/omnivoice/realtime` |
+| Gateway Bridge | Pipeline-based | `RealtimeBridge` in `gateway/` |
 | Barge-in | Via `bargein/` package | Native support |
 
 ## Architecture Overview
@@ -164,6 +166,22 @@ omnivoice/
 ├── bargein/                # Barge-in detection
 │   ├── config.go           # InterruptionMode (immediate, after_sentence, disabled)
 │   └── detector.go         # BargeInDetector with TTS/STT integration
+│
+├── realtime/               # Native voice-to-voice
+│   ├── provider.go         # Provider interface for OpenAI Realtime / Gemini Live
+│   ├── client.go           # Multi-provider client with fallback
+│   └── errors.go           # Common realtime errors
+│
+├── audio/                  # Audio processing
+│   ├── format/             # Audio format definitions
+│   │   └── format.go       # Twilio, OpenAI, Gemini format constants
+│   ├── converter/          # Audio format conversion
+│   │   └── converter.go    # TwilioToOpenAI, OpenAIToTwilio, etc.
+│   └── codec/              # Audio codecs (mulaw, alaw, PCM)
+│
+├── gateway/                # Voice gateway integration
+│   ├── gateway.go          # Gateway, Session, Config interfaces
+│   └── bridge.go           # RealtimeBridge for telephony ↔ realtime
 │
 ├── registry.go             # Global provider registry (RegisterSTTProvider, etc.)
 ├── registry/               # Provider discovery types
