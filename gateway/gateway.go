@@ -1,10 +1,33 @@
 // Package gateway provides a provider-agnostic interface for voice gateways.
 //
 // A Gateway handles full-duplex voice calls via telephony providers like Twilio
-// or Telnyx. It manages HTTP webhooks, WebSocket media streams, and the voice
-// processing pipeline (STT → LLM → TTS).
+// or Telnyx. It manages HTTP webhooks, WebSocket media streams, and voice
+// processing pipelines.
 //
-// Implementations:
+// # Pipeline Modes
+//
+// The gateway supports two pipeline modes:
+//
+// Text Pipeline (PipelineModeText):
+//
+//	Phone → Twilio WS → [STT → LLM (text) → TTS] → Twilio WS → Phone
+//	Latency: ~500-1000ms (STT + LLM + TTS)
+//
+// Realtime Pipeline (PipelineModeRealtime):
+//
+//	Phone → Twilio WS → [realtime.Provider] → Twilio WS → Phone
+//	Latency: ~100-200ms (native voice-to-voice)
+//
+// # Audio Format Conversion
+//
+// Telephony providers typically use mulaw 8kHz, while realtime providers use:
+//   - OpenAI Realtime: PCM16 24kHz mono
+//   - Gemini Live: PCM16 16kHz input, 24kHz output
+//
+// The gateway handles format conversion automatically.
+//
+// # Implementations
+//
 //   - github.com/plexusone/omni-twilio/omnivoice/gateway
 //   - github.com/plexusone/omni-telnyx/omnivoice/gateway
 //   - github.com/plexusone/omni-vonage/omnivoice/gateway
@@ -16,6 +39,8 @@ import (
 	"context"
 	"log/slog"
 	"time"
+
+	"github.com/plexusone/omnivoice-core/realtime"
 )
 
 // ProviderName identifies a voice gateway provider.
@@ -36,6 +61,19 @@ const (
 
 	// ProviderLiveKit uses LiveKit WebRTC.
 	ProviderLiveKit ProviderName = "livekit"
+)
+
+// PipelineMode determines how audio is processed.
+type PipelineMode string
+
+const (
+	// PipelineModeText uses the traditional STT → LLM → TTS pipeline.
+	// Higher latency (~500-1000ms) but works with any LLM.
+	PipelineModeText PipelineMode = "text"
+
+	// PipelineModeRealtime uses native voice-to-voice via realtime.Provider.
+	// Lower latency (~100-200ms) but requires OpenAI Realtime or Gemini Live.
+	PipelineModeRealtime PipelineMode = "realtime"
 )
 
 // CallInfo contains information about a call.
@@ -184,7 +222,11 @@ type Config struct {
 	ListenAddr string // e.g., ":8080"
 	PublicURL  string // e.g., "https://your-server.com"
 
-	// Voice pipeline configuration
+	// Pipeline mode selection
+	// Default: PipelineModeText if RealtimeProvider is nil
+	Mode PipelineMode
+
+	// Text pipeline configuration (used when Mode == PipelineModeText)
 	STTProvider string
 	STTAPIKey   string
 	STTModel    string
@@ -200,6 +242,11 @@ type Config struct {
 	LLMModel        string
 	LLMSystemPrompt string
 
+	// Realtime pipeline configuration (used when Mode == PipelineModeRealtime)
+	// Provide either RealtimeProvider directly, or RealtimeConfig to create one.
+	RealtimeProvider realtime.Provider
+	RealtimeConfig   *RealtimeConfig
+
 	// Session configuration
 	MaxSessionDuration time.Duration
 	InterruptionMode   string // "immediate", "after_sentence", "disabled"
@@ -208,8 +255,95 @@ type Config struct {
 	Logger *slog.Logger
 }
 
+// RealtimeConfig configures a realtime provider for voice-to-voice.
+type RealtimeConfig struct {
+	// Provider is the realtime provider name ("openai" or "gemini").
+	Provider string `json:"provider"`
+
+	// APIKey is the API key for the realtime provider.
+	APIKey string `json:"api_key"`
+
+	// Model is the model to use (e.g., "gpt-4o-realtime-preview-2024-12-17").
+	Model string `json:"model,omitempty"`
+
+	// Voice is the voice for audio output (e.g., "alloy", "Puck").
+	Voice string `json:"voice,omitempty"`
+
+	// Instructions is the system prompt for the conversation.
+	Instructions string `json:"instructions,omitempty"`
+
+	// Functions are tools the model can call during conversation.
+	Functions []realtime.FunctionDeclaration `json:"functions,omitempty"`
+
+	// OnFunctionCall handles function calls from the model.
+	// If nil, function calls are ignored.
+	OnFunctionCall func(id, name, args string) (result any, err error) `json:"-"`
+
+	// Temperature controls response randomness (0-2).
+	Temperature float64 `json:"temperature,omitempty"`
+}
+
+// ToProcessConfig converts RealtimeConfig to realtime.ProcessConfig.
+func (c *RealtimeConfig) ToProcessConfig() realtime.ProcessConfig {
+	return realtime.ProcessConfig{
+		Instructions:   c.Instructions,
+		Voice:          c.Voice,
+		Functions:      c.Functions,
+		OnFunctionCall: c.OnFunctionCall,
+		Temperature:    c.Temperature,
+	}
+}
+
 // LLMProvider defines the interface for LLM integration with voice gateways.
+// Used in text pipeline mode (PipelineModeText).
 type LLMProvider interface {
 	// Generate produces a response given user input and conversation history.
 	Generate(ctx context.Context, input string, history []Turn) (response string, toolCalls []ToolCall, err error)
+}
+
+// RealtimeProviderFactory creates realtime providers from configuration.
+// Implementations should be registered for each supported provider.
+type RealtimeProviderFactory interface {
+	// Create creates a realtime provider from the given configuration.
+	Create(config *RealtimeConfig) (realtime.Provider, error)
+
+	// Name returns the provider name (e.g., "openai", "gemini").
+	Name() string
+}
+
+// AudioFormat describes an audio format for conversion.
+type AudioFormat struct {
+	// Encoding is the audio encoding ("pcm16", "mulaw", "alaw").
+	Encoding string
+
+	// SampleRate is the sample rate in Hz (8000, 16000, 24000).
+	SampleRate int
+
+	// Channels is the number of audio channels (1 = mono, 2 = stereo).
+	Channels int
+}
+
+// Common audio formats used in voice gateways.
+var (
+	// AudioFormatTwilio is Twilio's native format (mulaw 8kHz mono).
+	AudioFormatTwilio = AudioFormat{Encoding: "mulaw", SampleRate: 8000, Channels: 1}
+
+	// AudioFormatTelnyx is Telnyx's native format (mulaw 8kHz mono).
+	AudioFormatTelnyx = AudioFormat{Encoding: "mulaw", SampleRate: 8000, Channels: 1}
+
+	// AudioFormatOpenAI is OpenAI Realtime's format (PCM16 24kHz mono).
+	AudioFormatOpenAI = AudioFormat{Encoding: "pcm16", SampleRate: 24000, Channels: 1}
+
+	// AudioFormatGeminiInput is Gemini Live's input format (PCM16 16kHz mono).
+	AudioFormatGeminiInput = AudioFormat{Encoding: "pcm16", SampleRate: 16000, Channels: 1}
+
+	// AudioFormatGeminiOutput is Gemini Live's output format (PCM16 24kHz mono).
+	AudioFormatGeminiOutput = AudioFormat{Encoding: "pcm16", SampleRate: 24000, Channels: 1}
+)
+
+// AudioConverter converts audio between formats.
+// Used to bridge telephony audio (mulaw 8kHz) with realtime providers (PCM16 16/24kHz).
+type AudioConverter interface {
+	// Convert converts audio from the source format to the target format.
+	Convert(audio []byte, from, to AudioFormat) ([]byte, error)
 }
