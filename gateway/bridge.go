@@ -33,8 +33,8 @@ type RealtimeBridge struct {
 	wg     sync.WaitGroup
 
 	// Transcript accumulation
-	mu         sync.Mutex
-	transcript []Turn
+	mu          sync.Mutex
+	transcript  []Turn
 	currentTurn *Turn
 }
 
@@ -275,10 +275,16 @@ func (b *RealtimeBridge) finalizeTurn(isInput bool) {
 	defer b.mu.Unlock()
 
 	if b.currentTurn != nil {
-		b.currentTurn.DurationMs = int(time.Since(b.currentTurn.Timestamp).Milliseconds())
+		durationMs := int(time.Since(b.currentTurn.Timestamp).Milliseconds())
+		b.currentTurn.DurationMs = durationMs
 		b.transcript = append(b.transcript, *b.currentTurn)
 		b.metrics.mu.Lock()
 		b.metrics.turnCount++
+		if isInput {
+			b.metrics.userSpeechDurationMs += durationMs
+		} else {
+			b.metrics.agentSpeechDurationMs += durationMs
+		}
 		b.metrics.mu.Unlock()
 		b.currentTurn = nil
 	}
