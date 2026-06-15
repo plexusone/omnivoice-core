@@ -35,6 +35,14 @@ const (
 	// AAC is Advanced Audio Coding.
 	// This is a container format with embedded metadata.
 	AAC Encoding = "aac"
+
+	// Speex is the Speex speech codec.
+	// Optimized for voice, used in some VoIP applications.
+	Speex Encoding = "speex"
+
+	// WebM is the WebM container format (typically contains Opus or Vorbis).
+	// This is a container format with embedded metadata.
+	WebM Encoding = "webm"
 )
 
 // Normalize returns a canonical encoding name (lowercase, trimmed).
@@ -42,10 +50,12 @@ const (
 //   - Case insensitivity: "LINEAR16" → "linear16"
 //   - Whitespace: " mulaw " → "mulaw"
 //   - Aliases: "pcm16" → "linear16", "ulaw" → "mulaw", "g711a" → "alaw"
+//   - Container mappings: "wav" → "linear16" (WAV contains raw PCM)
 func (e Encoding) Normalize() Encoding {
 	s := strings.ToLower(strings.TrimSpace(string(e)))
 	switch s {
-	case "linear16", "pcm16", "pcm", "pcm_s16le":
+	case "linear16", "pcm16", "pcm", "pcm_s16le", "wav":
+		// WAV is a container for raw PCM, so normalize to linear16
 		return Linear16
 	case "mulaw", "ulaw", "g711u", "pcm_mulaw":
 		return MuLaw
@@ -59,6 +69,10 @@ func (e Encoding) Normalize() Encoding {
 		return FLAC
 	case "aac":
 		return AAC
+	case "speex":
+		return Speex
+	case "webm":
+		return WebM
 	default:
 		return Encoding(s)
 	}

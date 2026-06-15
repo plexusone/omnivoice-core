@@ -15,6 +15,7 @@ func TestEncoding_Normalize(t *testing.T) {
 		{"PCM16", Linear16},
 		{"pcm", Linear16},
 		{"pcm_s16le", Linear16},
+		{"wav", Linear16}, // WAV container → raw PCM
 
 		// MuLaw variants
 		{"mulaw", MuLaw},
@@ -38,10 +39,14 @@ func TestEncoding_Normalize(t *testing.T) {
 		{"OPUS", Opus},
 		{"flac", FLAC},
 		{"aac", AAC},
+		{"speex", Speex},
+		{"SPEEX", Speex},
+		{"webm", WebM},
+		{"WEBM", WebM},
 
 		// Unknown passthrough
 		{"unknown", Encoding("unknown")},
-		{"webm", Encoding("webm")},
+		{"ogg", Encoding("ogg")},
 	}
 
 	for _, tt := range tests {
@@ -69,16 +74,17 @@ func TestEncoding_IsRaw(t *testing.T) {
 		{"ulaw", true},
 		{"g711a", true},
 		{" LINEAR16 ", true},
+		{"wav", true}, // WAV normalizes to linear16
 
 		// Container formats
 		{MP3, false},
 		{Opus, false},
 		{FLAC, false},
 		{AAC, false},
+		{Speex, false},
+		{WebM, false},
 
 		// Unknown
-		{"webm", false},
-		{"wav", false},
 		{"ogg", false},
 	}
 
@@ -107,12 +113,15 @@ func TestIsRawEncoding(t *testing.T) {
 		{"alaw", true},
 		{"g711u", true},
 		{"g711a", true},
+		{"wav", true}, // WAV normalizes to linear16
 
 		// Container formats
 		{"mp3", false},
 		{"opus", false},
 		{"flac", false},
 		{"aac", false},
+		{"speex", false},
+		{"webm", false},
 
 		// Edge cases
 		{"", false},
