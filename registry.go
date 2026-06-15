@@ -40,14 +40,30 @@ type registeredCallSystemProvider struct {
 	priority int
 }
 
+// registeredGatewayProvider holds a factory with its priority.
+type registeredGatewayProvider struct {
+	factory  registry.GatewayProviderFactory
+	priority int
+}
+
+// registeredRealtimeProvider holds a factory with its priority.
+type registeredRealtimeProvider struct {
+	factory  registry.RealtimeProviderFactory
+	priority int
+}
+
 var (
 	sttRegistry        = make(map[string]registeredSTTProvider)
 	ttsRegistry        = make(map[string]registeredTTSProvider)
 	callSystemRegistry = make(map[string]registeredCallSystemProvider)
+	gatewayRegistry    = make(map[string]registeredGatewayProvider)
+	realtimeRegistry   = make(map[string]registeredRealtimeProvider)
 
 	sttMu        sync.RWMutex
 	ttsMu        sync.RWMutex
 	callSystemMu sync.RWMutex
+	gatewayMu    sync.RWMutex
+	realtimeMu   sync.RWMutex
 )
 
 // RegisterSTTProvider registers an STT provider factory with the given name and priority.
@@ -252,6 +268,144 @@ func GetCallSystemProviderPriority(name string) int {
 	defer callSystemMu.RUnlock()
 
 	if rp, ok := callSystemRegistry[name]; ok {
+		return rp.priority
+	}
+	return -1
+}
+
+// RegisterGatewayProvider registers a Gateway provider factory with the given name and priority.
+// Higher priority values override lower priority registrations.
+//
+// Example:
+//
+//	// In omni-twilio/omnivoice/gateway/init.go (thick, priority 10)
+//	func init() {
+//	    omnivoice.RegisterGatewayProvider("twilio", NewGatewayProvider, omnivoice.PriorityThick)
+//	}
+func RegisterGatewayProvider(name string, factory registry.GatewayProviderFactory, priority int) {
+	gatewayMu.Lock()
+	defer gatewayMu.Unlock()
+
+	existing, ok := gatewayRegistry[name]
+	if !ok || priority >= existing.priority {
+		gatewayRegistry[name] = registeredGatewayProvider{
+			factory:  factory,
+			priority: priority,
+		}
+	}
+}
+
+// GetGatewayProvider creates a Gateway provider instance from the registry.
+// Returns an error if the provider is not registered or if creation fails.
+func GetGatewayProvider(name string, opts ...registry.ProviderOption) (registry.Gateway, error) {
+	gatewayMu.RLock()
+	rp, ok := gatewayRegistry[name]
+	gatewayMu.RUnlock()
+
+	if !ok {
+		return nil, fmt.Errorf("Gateway provider not registered: %s (available: %v)", name, ListGatewayProviders())
+	}
+
+	config := registry.ApplyOptions(opts...)
+	return rp.factory(config)
+}
+
+// ListGatewayProviders returns a list of all registered Gateway provider names.
+func ListGatewayProviders() []string {
+	gatewayMu.RLock()
+	defer gatewayMu.RUnlock()
+
+	names := make([]string, 0, len(gatewayRegistry))
+	for name := range gatewayRegistry {
+		names = append(names, name)
+	}
+	return names
+}
+
+// HasGatewayProvider returns true if a Gateway provider with the given name is registered.
+func HasGatewayProvider(name string) bool {
+	gatewayMu.RLock()
+	defer gatewayMu.RUnlock()
+	_, ok := gatewayRegistry[name]
+	return ok
+}
+
+// GetGatewayProviderPriority returns the priority of the registered Gateway provider.
+// Returns -1 if the provider is not registered.
+func GetGatewayProviderPriority(name string) int {
+	gatewayMu.RLock()
+	defer gatewayMu.RUnlock()
+
+	if rp, ok := gatewayRegistry[name]; ok {
+		return rp.priority
+	}
+	return -1
+}
+
+// RegisterRealtimeProvider registers a Realtime provider factory with the given name and priority.
+// Higher priority values override lower priority registrations.
+//
+// Example:
+//
+//	// In omni-openai/omnivoice/realtime/init.go (thick, priority 10)
+//	func init() {
+//	    omnivoice.RegisterRealtimeProvider("openai", NewRealtimeProvider, omnivoice.PriorityThick)
+//	}
+func RegisterRealtimeProvider(name string, factory registry.RealtimeProviderFactory, priority int) {
+	realtimeMu.Lock()
+	defer realtimeMu.Unlock()
+
+	existing, ok := realtimeRegistry[name]
+	if !ok || priority >= existing.priority {
+		realtimeRegistry[name] = registeredRealtimeProvider{
+			factory:  factory,
+			priority: priority,
+		}
+	}
+}
+
+// GetRealtimeProvider creates a Realtime provider instance from the registry.
+// Returns an error if the provider is not registered or if creation fails.
+func GetRealtimeProvider(name string, opts ...registry.ProviderOption) (registry.RealtimeProvider, error) {
+	realtimeMu.RLock()
+	rp, ok := realtimeRegistry[name]
+	realtimeMu.RUnlock()
+
+	if !ok {
+		return nil, fmt.Errorf("Realtime provider not registered: %s (available: %v)", name, ListRealtimeProviders())
+	}
+
+	config := registry.ApplyOptions(opts...)
+	return rp.factory(config)
+}
+
+// ListRealtimeProviders returns a list of all registered Realtime provider names.
+func ListRealtimeProviders() []string {
+	realtimeMu.RLock()
+	defer realtimeMu.RUnlock()
+
+	names := make([]string, 0, len(realtimeRegistry))
+	for name := range realtimeRegistry {
+		names = append(names, name)
+	}
+	return names
+}
+
+// HasRealtimeProvider returns true if a Realtime provider with the given name is registered.
+func HasRealtimeProvider(name string) bool {
+	realtimeMu.RLock()
+	defer realtimeMu.RUnlock()
+	_, ok := realtimeRegistry[name]
+	return ok
+}
+
+// GetRealtimeProviderPriority returns the priority of the registered Realtime provider.
+// Returns -1 if the provider is not registered.
+func GetRealtimeProviderPriority(name string) int {
+	realtimeMu.RLock()
+	defer realtimeMu.RUnlock()
+
+	if rp, ok := realtimeRegistry[name]; ok {
 		return rp.priority
 	}
 	return -1
