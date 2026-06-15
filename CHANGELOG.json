@@ -7,6 +7,35 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.14.0",
+      "date": "2026-06-15",
+      "highlights": [
+        { "description": "Gateway provider registry for voice gateways (Twilio, Telnyx)" },
+        { "description": "Realtime provider registry for native voice-to-voice (OpenAI Realtime, Gemini Live)" },
+        { "description": "Side-effect registration via init() for provider discovery" }
+      ],
+      "added": [
+        { "description": "`RegisterGatewayProvider()` for registering voice gateway providers", "commit": "609dc45" },
+        { "description": "`GetGatewayProvider()` for retrieving registered gateway providers", "commit": "609dc45" },
+        { "description": "`ListGatewayProviders()` for discovering available gateway providers", "commit": "609dc45" },
+        { "description": "`HasGatewayProvider()` for checking gateway registration", "commit": "609dc45" },
+        { "description": "`RegisterRealtimeProvider()` for registering native voice-to-voice providers", "commit": "609dc45" },
+        { "description": "`GetRealtimeProvider()` for retrieving registered realtime providers", "commit": "609dc45" },
+        { "description": "`ListRealtimeProviders()` for discovering available realtime providers", "commit": "609dc45" },
+        { "description": "`HasRealtimeProvider()` for checking realtime registration", "commit": "609dc45" },
+        { "description": "`registry.Gateway` interface for gateway provider implementations", "commit": "609dc45" },
+        { "description": "`registry.RealtimeProvider` interface for realtime provider implementations", "commit": "609dc45" },
+        { "description": "`registry.GatewayProviderFactory` and `registry.RealtimeProviderFactory` types", "commit": "609dc45" },
+        { "description": "`WithListener()` option for pre-configured gateway listeners", "commit": "609dc45" },
+        { "description": "`WithPublicURL()` option for gateway webhook callbacks", "commit": "609dc45" },
+        { "description": "`WithListenAddr()` option for gateway server addresses", "commit": "609dc45" },
+        { "description": "`WithConnectionID()` option for Telnyx connection IDs", "commit": "609dc45" },
+        { "description": "`WithVoice()` option for realtime provider voice selection", "commit": "609dc45" },
+        { "description": "`WithModel()` option for realtime provider model selection", "commit": "609dc45" },
+        { "description": "`WithInstructions()` option for realtime provider system prompts", "commit": "609dc45" }
+      ]
+    },
+    {
       "version": "v0.13.0",
       "date": "2026-06-15",
       "highlights": [

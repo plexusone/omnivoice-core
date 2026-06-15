@@ -183,10 +183,10 @@ omnivoice/
 │   ├── gateway.go          # Gateway, Session, Config interfaces
 │   └── bridge.go           # RealtimeBridge for telephony ↔ realtime
 │
-├── registry.go             # Global provider registry (RegisterSTTProvider, etc.)
+├── registry.go             # Global provider registry (STT, TTS, CallSystem, Gateway, Realtime)
 ├── registry/               # Provider discovery types
-│   ├── registry.go         # Registry interface, factory types
-│   └── options.go          # ProviderConfig, ProviderOption
+│   ├── registry.go         # Registry interface, factory types, Gateway/RealtimeProvider interfaces
+│   └── options.go          # ProviderConfig, ProviderOption (WithVoice, WithModel, etc.)
 │
 ├── subtitle/               # Subtitle generation
 │   └── subtitle.go         # SRT/VTT from transcription results
