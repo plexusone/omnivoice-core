@@ -34,6 +34,39 @@ exists := omnivoice.HasTTSProvider("elevenlabs")
 priority := omnivoice.GetSTTProviderPriority("deepgram")  // 10
 ```
 
+### Gateway and Realtime Registries (v0.14.0+)
+
+Voice gateway and realtime (voice-to-voice) providers also have registry support:
+
+```go
+import (
+    omnivoice "github.com/plexusone/omnivoice-core"
+    "github.com/plexusone/omnivoice-core/registry"
+    _ "github.com/plexusone/omni-twilio/omnivoice/gateway"   // Auto-registers "twilio"
+    _ "github.com/plexusone/omni-openai/omnivoice/realtime"  // Auto-registers "openai"
+)
+
+// Gateway providers (Twilio, Telnyx)
+omnivoice.RegisterGatewayProvider("twilio", factory, omnivoice.PriorityThick)
+gateway, err := omnivoice.GetGatewayProvider("twilio",
+    registry.WithAccountSID(accountSID),
+    registry.WithAuthToken(authToken),
+    registry.WithPhoneNumber("+15551234567"),
+)
+names := omnivoice.ListGatewayProviders()     // ["twilio", "telnyx"]
+exists := omnivoice.HasGatewayProvider("twilio")
+
+// Realtime providers (OpenAI Realtime, Gemini Live)
+omnivoice.RegisterRealtimeProvider("openai", factory, omnivoice.PriorityThick)
+realtime, err := omnivoice.GetRealtimeProvider("openai",
+    registry.WithAPIKey(apiKey),
+    registry.WithModel("gpt-4o-realtime-preview"),
+    registry.WithVoice("alloy"),
+)
+names := omnivoice.ListRealtimeProviders()    // ["openai", "gemini"]
+exists := omnivoice.HasRealtimeProvider("gemini")
+```
+
 ### Priority System
 
 Providers register with a priority level. Higher priority overrides lower:
@@ -69,30 +102,34 @@ omnivoice               ← Batteries-included (imports all providers)
 ## Local Registry
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Application                              │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                       Registry                            │   │
-│  ├──────────────────┬───────────────────┬───────────────────┤   │
-│  │   TTS Providers  │   STT Providers   │ CallSystem Provs  │   │
-│  │                  │                   │                   │   │
-│  │  - elevenlabs    │  - deepgram       │  - twilio         │   │
-│  │  - openai        │  - openai         │  - telnyx         │   │
-│  │  - google        │  - google         │  - vonage         │   │
-│  │  - azure         │  - assemblyai     │  - bandwidth      │   │
-│  └──────────────────┴───────────────────┴───────────────────┘   │
-│                              │                                   │
-│                              ▼                                   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   Provider Creation                       │   │
-│  │                                                           │   │
-│  │   provider, err := registry.GetTTSProvider("elevenlabs",  │   │
-│  │       registry.WithAPIKey(apiKey),                        │   │
-│  │   )                                                       │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                  Application                                  │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │                              Registry                                   │  │
+│  ├─────────────┬─────────────┬─────────────┬─────────────┬─────────────────┤  │
+│  │ TTS Provs   │ STT Provs   │ CallSystem  │ Gateway     │ Realtime        │  │
+│  │             │             │             │             │                 │  │
+│  │ - elevenlabs│ - deepgram  │ - twilio    │ - twilio    │ - openai        │  │
+│  │ - openai    │ - openai    │ - telnyx    │ - telnyx    │ - gemini        │  │
+│  │ - google    │ - google    │ - vonage    │             │                 │  │
+│  │ - azure     │ - assemblyai│ - bandwidth │             │                 │  │
+│  └─────────────┴─────────────┴─────────────┴─────────────┴─────────────────┘  │
+│                                      │                                        │
+│                                      ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │                         Provider Creation                               │  │
+│  │                                                                         │  │
+│  │   // Voice pipeline providers                                           │  │
+│  │   tts, _ := omnivoice.GetTTSProvider("elevenlabs", opts...)             │  │
+│  │   stt, _ := omnivoice.GetSTTProvider("deepgram", opts...)               │  │
+│  │                                                                         │  │
+│  │   // Gateway and realtime providers (v0.14.0+)                          │  │
+│  │   gateway, _ := omnivoice.GetGatewayProvider("twilio", opts...)         │  │
+│  │   realtime, _ := omnivoice.GetRealtimeProvider("openai", opts...)       │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Registry Interface
@@ -118,6 +155,18 @@ type Registry interface {
     GetCallSystemProvider(name string, opts ...ProviderOption) (callsystem.CallSystem, error)
     ListCallSystemProviders() []string
     HasCallSystemProvider(name string) bool
+
+    // Gateway providers (v0.14.0+)
+    RegisterGatewayProvider(name string, factory GatewayProviderFactory)
+    GetGatewayProvider(name string, opts ...ProviderOption) (Gateway, error)
+    ListGatewayProviders() []string
+    HasGatewayProvider(name string) bool
+
+    // Realtime providers (v0.14.0+)
+    RegisterRealtimeProvider(name string, factory RealtimeProviderFactory)
+    GetRealtimeProvider(name string, opts ...ProviderOption) (RealtimeProvider, error)
+    ListRealtimeProviders() []string
+    HasRealtimeProvider(name string) bool
 }
 ```
 
@@ -134,6 +183,42 @@ type STTProviderFactory func(config ProviderConfig) (stt.Provider, error)
 
 // CallSystem provider factory
 type CallSystemProviderFactory func(config ProviderConfig) (callsystem.CallSystem, error)
+
+// Gateway provider factory (v0.14.0+)
+type GatewayProviderFactory func(config ProviderConfig) (Gateway, error)
+
+// Realtime provider factory (v0.14.0+)
+type RealtimeProviderFactory func(config ProviderConfig) (RealtimeProvider, error)
+```
+
+### Gateway and Realtime Interfaces
+
+The registry provides minimal interfaces for Gateway and Realtime providers:
+
+```go
+// Gateway interface for voice gateways (PSTN, WebRTC)
+type Gateway interface {
+    Name() string
+    Start(ctx any) error
+    Stop() error
+}
+
+// RealtimeProvider interface for native voice-to-voice
+type RealtimeProvider interface {
+    Name() string
+    Close() error
+}
+```
+
+Provider wrappers typically expose a method to access the full concrete type:
+
+```go
+// Get the underlying concrete gateway
+gw, _ := omnivoice.GetGatewayProvider("twilio", opts...)
+if wrapper, ok := gw.(interface{ Gateway() *twilioGateway.Gateway }); ok {
+    concreteGW := wrapper.Gateway()
+    concreteGW.OnCall(handler)  // Full API access
+}
 ```
 
 ## Provider Configuration
@@ -166,6 +251,97 @@ type ProviderOption func(*ProviderConfig)
 config := registry.ApplyOptions(
     registry.WithAPIKey(apiKey),
     registry.WithBaseURL(customURL),
+)
+```
+
+### Common Options
+
+The registry provides typed option functions for common configuration:
+
+```go
+// Authentication
+registry.WithAPIKey(apiKey)
+registry.WithAccountSID(accountSID)    // Twilio
+registry.WithAuthToken(authToken)      // Twilio
+
+// Server configuration
+registry.WithPhoneNumber(number)
+registry.WithWebhookURL(url)
+registry.WithRegion(region)
+
+// Gateway options (v0.14.0+)
+registry.WithListener(listener)        // net.Listener for custom servers
+registry.WithPublicURL(url)            // Public URL for webhooks
+registry.WithListenAddr(addr)          // Server listen address
+registry.WithConnectionID(id)          // Telnyx connection ID
+
+// Realtime options (v0.14.0+)
+registry.WithVoice(voice)              // Voice selection
+registry.WithModel(model)              // Model selection
+registry.WithInstructions(prompt)      // System prompt
+```
+
+### Pipeline Configuration Options (v0.14.0+)
+
+Type-safe options for voice pipeline configuration:
+
+```go
+// STT configuration
+registry.WithSTTProvider("deepgram")
+registry.WithSTTAPIKey(apiKey)
+registry.WithSTTModel("nova-2")
+registry.WithSTTLanguage("en-US")
+
+// TTS configuration
+registry.WithTTSProvider("elevenlabs")
+registry.WithTTSAPIKey(apiKey)
+registry.WithTTSVoiceID("rachel")
+registry.WithTTSModel("eleven_turbo_v2")
+
+// LLM configuration
+registry.WithLLMProvider("anthropic")
+registry.WithLLMAPIKey(apiKey)
+registry.WithLLMModel("claude-sonnet-4-20250514")
+registry.WithLLMSystemPrompt("You are a helpful assistant.")
+
+// Session configuration
+registry.WithGreeting("Hello, how can I help?")
+registry.WithMaxSessionDuration(30 * time.Minute)
+registry.WithInterruptionMode("immediate")
+registry.WithLogger(logger)
+registry.WithPipelineMode("realtime")  // "text" or "realtime"
+```
+
+### Provider-Specific Options
+
+Provider packages export their own type-safe options for provider-specific configuration:
+
+```go
+import (
+    "github.com/plexusone/omnivoice-core/registry"
+    twilioGateway "github.com/plexusone/omni-twilio/omnivoice/gateway"
+)
+
+// Type-safe tool configuration
+tools := []twilioGateway.ToolDefinition{
+    {Name: "get_weather", Description: "Get weather", Parameters: params},
+}
+handlers := map[string]twilioGateway.ToolHandler{
+    "get_weather": weatherHandler,
+}
+
+gateway, err := omnivoice.GetGatewayProvider("twilio",
+    // Common registry options
+    registry.WithAccountSID(accountSID),
+    registry.WithAuthToken(authToken),
+    registry.WithSTTProvider("deepgram"),
+    registry.WithTTSProvider("elevenlabs"),
+
+    // Provider-specific type-safe options
+    twilioGateway.WithTools(tools),
+    twilioGateway.WithToolHandlers(handlers),
+    twilioGateway.WithRealtimeProviderFactory(factory),
+    twilioGateway.WithRealtimeConfig(realtimeConfig),
 )
 ```
 
@@ -242,6 +418,78 @@ if err != nil {
 }
 ```
 
+### Getting Gateway Providers (v0.14.0+)
+
+Create voice gateways via the registry with full pipeline configuration:
+
+```go
+import (
+    omnivoice "github.com/plexusone/omnivoice-core"
+    "github.com/plexusone/omnivoice-core/registry"
+    twilioGateway "github.com/plexusone/omni-twilio/omnivoice/gateway"
+    _ "github.com/plexusone/omni-twilio/omnivoice/gateway"  // Auto-registers "twilio"
+)
+
+// Create Twilio gateway with full pipeline config
+gateway, err := omnivoice.GetGatewayProvider("twilio",
+    // Credentials
+    registry.WithAccountSID(os.Getenv("TWILIO_ACCOUNT_SID")),
+    registry.WithAuthToken(os.Getenv("TWILIO_AUTH_TOKEN")),
+    registry.WithPhoneNumber("+15551234567"),
+
+    // Server
+    registry.WithPublicURL("https://example.ngrok.io"),
+    registry.WithListenAddr(":8080"),
+
+    // STT → LLM → TTS pipeline
+    registry.WithSTTProvider("deepgram"),
+    registry.WithSTTAPIKey(os.Getenv("DEEPGRAM_API_KEY")),
+    registry.WithTTSProvider("elevenlabs"),
+    registry.WithTTSAPIKey(os.Getenv("ELEVENLABS_API_KEY")),
+    registry.WithTTSVoiceID("rachel"),
+    registry.WithLLMProvider("anthropic"),
+    registry.WithLLMModel("claude-sonnet-4-20250514"),
+    registry.WithLLMSystemPrompt("You are a helpful assistant."),
+
+    // Session
+    registry.WithGreeting("Hello! How can I help you today?"),
+    registry.WithMaxSessionDuration(30 * time.Minute),
+
+    // Provider-specific tools (type-safe)
+    twilioGateway.WithTools(tools),
+    twilioGateway.WithToolHandlers(handlers),
+)
+```
+
+### Getting Realtime Providers (v0.14.0+)
+
+Create native voice-to-voice providers:
+
+```go
+import (
+    omnivoice "github.com/plexusone/omnivoice-core"
+    "github.com/plexusone/omnivoice-core/registry"
+    _ "github.com/plexusone/omni-openai/omnivoice/realtime"  // Auto-registers "openai"
+    _ "github.com/plexusone/omni-google/omnivoice/realtime"  // Auto-registers "gemini"
+)
+
+// OpenAI Realtime (~100ms latency)
+openaiRT, err := omnivoice.GetRealtimeProvider("openai",
+    registry.WithAPIKey(os.Getenv("OPENAI_API_KEY")),
+    registry.WithModel("gpt-4o-realtime-preview"),
+    registry.WithVoice("alloy"),
+    registry.WithInstructions("You are a helpful voice assistant."),
+)
+
+// Gemini Live (~200ms latency)
+geminiRT, err := omnivoice.GetRealtimeProvider("gemini",
+    registry.WithAPIKey(os.Getenv("GEMINI_API_KEY")),
+    registry.WithModel("gemini-2.0-flash-live"),
+    registry.WithVoice("Puck"),
+    registry.WithInstructions("You are a helpful voice assistant."),
+)
+```
+
 ### Listing Available Providers
 
 Discover what providers are registered:
@@ -251,6 +499,16 @@ Discover what providers are registered:
 ttsProviders := omnivoice.ListTTSProviders()
 fmt.Println("Available TTS providers:", ttsProviders)
 // Output: Available TTS providers: [elevenlabs openai google azure]
+
+// List gateway providers (v0.14.0+)
+gatewayProviders := omnivoice.ListGatewayProviders()
+fmt.Println("Available gateway providers:", gatewayProviders)
+// Output: Available gateway providers: [twilio telnyx]
+
+// List realtime providers (v0.14.0+)
+realtimeProviders := omnivoice.ListRealtimeProviders()
+fmt.Println("Available realtime providers:", realtimeProviders)
+// Output: Available realtime providers: [openai gemini]
 
 // Check if a provider exists
 if omnivoice.HasSTTProvider("deepgram") {
