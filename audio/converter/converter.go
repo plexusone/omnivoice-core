@@ -54,15 +54,18 @@ func (c *Converter) Convert(audio []byte, from, to format.AudioFormat) ([]byte, 
 }
 
 // decode converts audio bytes to PCM16 samples.
-func (c *Converter) decode(audio []byte, format format.AudioFormat) ([]int16, error) {
-	switch format.Encoding {
-	case "pcm16":
+func (c *Converter) decode(audio []byte, fmt format.AudioFormat) ([]int16, error) {
+	// Normalize encoding to handle variations (pcm16, linear16, ulaw, etc.)
+	encoding := format.Encoding(fmt.Encoding).Normalize()
+
+	switch encoding {
+	case format.Linear16:
 		return codec.BytesToInt16(audio, false), nil
 
-	case "mulaw":
+	case format.MuLaw:
 		return codec.MulawDecode(audio), nil
 
-	case "alaw":
+	case format.ALaw:
 		return codec.AlawDecode(audio), nil
 
 	default:
@@ -71,15 +74,18 @@ func (c *Converter) decode(audio []byte, format format.AudioFormat) ([]int16, er
 }
 
 // encode converts PCM16 samples to the target format.
-func (c *Converter) encode(pcm []int16, format format.AudioFormat) ([]byte, error) {
-	switch format.Encoding {
-	case "pcm16":
+func (c *Converter) encode(pcm []int16, fmt format.AudioFormat) ([]byte, error) {
+	// Normalize encoding to handle variations (pcm16, linear16, ulaw, etc.)
+	encoding := format.Encoding(fmt.Encoding).Normalize()
+
+	switch encoding {
+	case format.Linear16:
 		return codec.Int16ToBytes(pcm, false), nil
 
-	case "mulaw":
+	case format.MuLaw:
 		return codec.MulawEncode(pcm), nil
 
-	case "alaw":
+	case format.ALaw:
 		return codec.AlawEncode(pcm), nil
 
 	default:
