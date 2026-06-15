@@ -174,7 +174,7 @@ omnivoice/
 │
 ├── audio/                  # Audio processing
 │   ├── format/             # Audio format definitions
-│   │   └── format.go       # Twilio, OpenAI, Gemini format constants
+│   │   └── format.go       # Encoding type with normalization, provider format constants
 │   ├── converter/          # Audio format conversion
 │   │   └── converter.go    # TwilioToOpenAI, OpenAIToTwilio, etc.
 │   └── codec/              # Audio codecs (mulaw, alaw, PCM)

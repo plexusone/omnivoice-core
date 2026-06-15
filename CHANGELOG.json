@@ -7,6 +7,49 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.13.0",
+      "date": "2026-06-15",
+      "highlights": [
+        { "description": "Typed Encoding system for audio format handling" },
+        { "description": "Encoding normalization handles pcm16, ulaw, wav, and other aliases" },
+        { "description": "IsRawEncoding() for detecting formats that need explicit parameters" }
+      ],
+      "added": [
+        { "description": "`format.Encoding` type with constants: `Linear16`, `MuLaw`, `ALaw`, `MP3`, `Opus`, `FLAC`, `AAC`, `Speex`, `WebM`", "commit": "48d4fe4" },
+        { "description": "`Encoding.Normalize()` method for canonical encoding names with alias mapping", "commit": "48d4fe4" },
+        { "description": "`Encoding.IsRaw()` method to detect raw audio formats", "commit": "48d4fe4" },
+        { "description": "`IsRawEncoding(string)` convenience function", "commit": "48d4fe4" },
+        { "description": "WAV normalization to Linear16 (WAV is a container for raw PCM)", "commit": "5451f73" },
+        { "description": "`Speex` and `WebM` encoding constants", "commit": "5451f73" }
+      ],
+      "changed": [
+        { "description": "`audio/converter` uses `format.Encoding` type for codec selection", "commit": "48d4fe4" },
+        { "description": "Predefined `AudioFormat` vars use encoding constants instead of strings", "commit": "48d4fe4" }
+      ],
+      "tests": [
+        { "description": "Comprehensive tests for `Encoding.Normalize()` with all aliases", "commit": "48d4fe4" },
+        { "description": "Tests for `IsRawEncoding()` with raw and container formats", "commit": "48d4fe4" }
+      ]
+    },
+    {
+      "version": "v0.12.1",
+      "date": "2026-06-14",
+      "highlights": [
+        { "description": "Internal refactoring to reduce code duplication" },
+        { "description": "Generic provider.Client[T] for multi-provider management" }
+      ],
+      "refactored": [
+        { "description": "Extracted `provider.Client[T]` generic type for multi-provider management", "commit": "e93b9e1" },
+        { "description": "`tts.Client` embeds `provider.Client[tts.Provider]`", "commit": "e93b9e1" },
+        { "description": "`stt.Client` embeds `provider.Client[stt.Provider]`", "commit": "48cb1b3" },
+        { "description": "`realtime.Client` embeds `provider.Client[realtime.Provider]`", "commit": "c249122" },
+        { "description": "Removed duplicate `AudioFormat` from `realtime/provider.go`", "commit": "33b946a" }
+      ],
+      "added": [
+        { "description": "`format.PCM16_24kHz` and `format.PCM16_16kHz` aliases for provider-agnostic usage", "commit": "33b946a" }
+      ]
+    },
+    {
       "version": "v0.12.0",
       "date": "2026-06-14",
       "highlights": [
