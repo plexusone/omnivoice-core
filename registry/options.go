@@ -1,6 +1,10 @@
 package registry
 
-import "net"
+import (
+	"log/slog"
+	"net"
+	"time"
+)
 
 // WithAPIKey sets the API key for the provider.
 func WithAPIKey(apiKey string) ProviderOption {
@@ -92,4 +96,93 @@ func WithModel(model string) ProviderOption {
 // WithInstructions sets the system prompt/instructions.
 func WithInstructions(instructions string) ProviderOption {
 	return WithExtension("instructions", instructions)
+}
+
+// Pipeline configuration options.
+
+// WithSTTProvider sets the STT provider name.
+func WithSTTProvider(provider string) ProviderOption {
+	return WithExtension("sttProvider", provider)
+}
+
+// WithSTTAPIKey sets the STT API key.
+func WithSTTAPIKey(apiKey string) ProviderOption {
+	return WithExtension("sttAPIKey", apiKey)
+}
+
+// WithSTTModel sets the STT model.
+func WithSTTModel(model string) ProviderOption {
+	return WithExtension("sttModel", model)
+}
+
+// WithSTTLanguage sets the STT language.
+func WithSTTLanguage(language string) ProviderOption {
+	return WithExtension("sttLanguage", language)
+}
+
+// WithTTSProvider sets the TTS provider name.
+func WithTTSProvider(provider string) ProviderOption {
+	return WithExtension("ttsProvider", provider)
+}
+
+// WithTTSAPIKey sets the TTS API key.
+func WithTTSAPIKey(apiKey string) ProviderOption {
+	return WithExtension("ttsAPIKey", apiKey)
+}
+
+// WithTTSVoiceID sets the TTS voice ID.
+func WithTTSVoiceID(voiceID string) ProviderOption {
+	return WithExtension("ttsVoiceID", voiceID)
+}
+
+// WithTTSModel sets the TTS model.
+func WithTTSModel(model string) ProviderOption {
+	return WithExtension("ttsModel", model)
+}
+
+// WithLLMProvider sets the LLM provider name.
+func WithLLMProvider(provider string) ProviderOption {
+	return WithExtension("llmProvider", provider)
+}
+
+// WithLLMAPIKey sets the LLM API key.
+func WithLLMAPIKey(apiKey string) ProviderOption {
+	return WithExtension("llmAPIKey", apiKey)
+}
+
+// WithLLMModel sets the LLM model.
+func WithLLMModel(model string) ProviderOption {
+	return WithExtension("llmModel", model)
+}
+
+// WithLLMSystemPrompt sets the LLM system prompt.
+func WithLLMSystemPrompt(prompt string) ProviderOption {
+	return WithExtension("llmSystemPrompt", prompt)
+}
+
+// Session configuration options.
+
+// WithGreeting sets the initial greeting message.
+func WithGreeting(greeting string) ProviderOption {
+	return WithExtension("greeting", greeting)
+}
+
+// WithMaxSessionDuration sets the maximum session duration.
+func WithMaxSessionDuration(d time.Duration) ProviderOption {
+	return WithExtension("maxSessionDuration", d)
+}
+
+// WithInterruptionMode sets the interruption mode.
+func WithInterruptionMode(mode string) ProviderOption {
+	return WithExtension("interruptionMode", mode)
+}
+
+// WithLogger sets the logger.
+func WithLogger(logger *slog.Logger) ProviderOption {
+	return WithExtension("logger", logger)
+}
+
+// WithPipelineMode sets the pipeline mode ("text" or "realtime").
+func WithPipelineMode(mode string) ProviderOption {
+	return WithExtension("pipelineMode", mode)
 }
