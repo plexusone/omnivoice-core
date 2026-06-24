@@ -1,0 +1,255 @@
+// Copyright 2024 PlexusOne. All rights reserved.
+// Use of this source code is governed by the MIT license.
+
+syntax = "proto3";
+
+package omnivoice.localvoice.v1;
+
+option go_package = "github.com/plexusone/omnivoice-core/proto/localvoice/v1;localvoicev1";
+
+// LocalVoice service for local TTS inference via gRPC over Unix Domain Socket.
+//
+// This service is implemented by local TTS model servers (F5-TTS MLX, Qwen3-TTS, etc.)
+// and consumed by Go provider clients in omni-f5tts, omni-qwen, etc.
+//
+// Connection: unix:///tmp/omnivoice-{provider}.sock
+service LocalVoice {
+  // Synthesize converts text to speech, streaming audio chunks as they generate.
+  // This enables low-latency playback before synthesis completes.
+  rpc Synthesize(SynthesizeRequest) returns (stream AudioChunk);
+
+  // SynthesizeWithReference performs zero-shot voice cloning using reference audio.
+  // The reference audio and transcript are used to clone the voice characteristics.
+  rpc SynthesizeWithReference(ReferenceSynthesizeRequest) returns (stream AudioChunk);
+
+  // PrepareVoiceProfile pre-computes and caches a voice embedding from reference audio.
+  // Subsequent synthesis with this profile ID will be faster.
+  rpc PrepareVoiceProfile(PrepareVoiceProfileRequest) returns (PrepareVoiceProfileResponse);
+
+  // Health returns the health status and model information.
+  rpc Health(HealthRequest) returns (HealthResponse);
+
+  // LoadModel loads the TTS model into memory.
+  // Call this before Synthesize if the model is not auto-loaded.
+  rpc LoadModel(LoadModelRequest) returns (LoadModelResponse);
+
+  // UnloadModel unloads the model from memory to free resources.
+  rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse);
+
+  // RuntimeInfo returns information about the runtime environment.
+  rpc RuntimeInfo(RuntimeInfoRequest) returns (RuntimeInfoResponse);
+}
+
+// SynthesizeRequest is a request to synthesize speech from text.
+message SynthesizeRequest {
+  // text is the text to synthesize.
+  string text = 1;
+
+  // voice_id is the voice profile ID or "default" for the default voice.
+  string voice_id = 2;
+
+  // format is the desired audio output format.
+  AudioFormat format = 3;
+
+  // speed is the speech rate multiplier (default 1.0).
+  // Values > 1.0 speed up, values < 1.0 slow down.
+  optional float speed = 4;
+
+  // language is the BCP-47 language code (e.g., "en-US", "zh-CN").
+  // If not specified, auto-detection may be used.
+  optional string language = 5;
+}
+
+// ReferenceSynthesizeRequest is a request for zero-shot voice cloning.
+message ReferenceSynthesizeRequest {
+  // text is the text to synthesize in the cloned voice.
+  string text = 1;
+
+  // reference_audio is the WAV/PCM audio bytes of the reference speaker.
+  // Recommended: 5-15 seconds of clear speech.
+  bytes reference_audio = 2;
+
+  // reference_text is the transcript of the reference audio.
+  // Must accurately match what is spoken in reference_audio.
+  string reference_text = 3;
+
+  // format is the desired audio output format.
+  AudioFormat format = 4;
+
+  // speed is the speech rate multiplier (default 1.0).
+  optional float speed = 5;
+
+  // language is the BCP-47 language code.
+  optional string language = 6;
+}
+
+// AudioChunk represents a chunk of streaming audio output.
+message AudioChunk {
+  // data contains raw audio bytes for this chunk.
+  bytes data = 1;
+
+  // is_final is true for the last chunk in the stream.
+  bool is_final = 2;
+
+  // metadata is included only on the first chunk.
+  optional AudioMetadata metadata = 3;
+}
+
+// AudioMetadata describes the audio format of the stream.
+message AudioMetadata {
+  // format is the audio format.
+  AudioFormat format = 1;
+
+  // sample_rate is the sample rate in Hz (e.g., 24000, 44100).
+  int32 sample_rate = 2;
+
+  // channels is the number of audio channels (1 = mono, 2 = stereo).
+  int32 channels = 3;
+
+  // bit_depth is the bits per sample (e.g., 16, 32).
+  int32 bit_depth = 4;
+}
+
+// AudioFormat specifies the audio encoding format.
+enum AudioFormat {
+  // AUDIO_FORMAT_UNSPECIFIED indicates no format preference.
+  AUDIO_FORMAT_UNSPECIFIED = 0;
+
+  // AUDIO_FORMAT_WAV is WAV format with headers.
+  AUDIO_FORMAT_WAV = 1;
+
+  // AUDIO_FORMAT_PCM_S16LE is raw PCM, signed 16-bit little-endian.
+  AUDIO_FORMAT_PCM_S16LE = 2;
+
+  // AUDIO_FORMAT_PCM_F32LE is raw PCM, float32 little-endian.
+  AUDIO_FORMAT_PCM_F32LE = 3;
+
+  // AUDIO_FORMAT_MP3 is MP3 format.
+  AUDIO_FORMAT_MP3 = 4;
+
+  // AUDIO_FORMAT_MULAW_8K is G.711 mu-law at 8kHz for telephony.
+  AUDIO_FORMAT_MULAW_8K = 5;
+
+  // AUDIO_FORMAT_OPUS is Opus format.
+  AUDIO_FORMAT_OPUS = 6;
+}
+
+// PrepareVoiceProfileRequest requests pre-computation of a voice embedding.
+message PrepareVoiceProfileRequest {
+  // profile_id is the unique identifier for this voice profile.
+  string profile_id = 1;
+
+  // reference_audio is the WAV/PCM audio bytes of the reference speaker.
+  bytes reference_audio = 2;
+
+  // reference_text is the transcript of the reference audio.
+  string reference_text = 3;
+
+  // language is the BCP-47 language code.
+  optional string language = 4;
+}
+
+// PrepareVoiceProfileResponse contains the result of profile preparation.
+message PrepareVoiceProfileResponse {
+  // profile_id is the profile identifier that was prepared.
+  string profile_id = 1;
+
+  // cached indicates whether the embedding was successfully cached.
+  bool cached = 2;
+
+  // embedding_size_bytes is the size of the cached embedding.
+  int64 embedding_size_bytes = 3;
+}
+
+// HealthRequest is an empty request for health checking.
+message HealthRequest {}
+
+// HealthResponse contains health and model status information.
+message HealthResponse {
+  // healthy indicates whether the service is operational.
+  bool healthy = 1;
+
+  // model_loaded indicates whether the TTS model is loaded in memory.
+  bool model_loaded = 2;
+
+  // model_name is the name of the loaded model (e.g., "f5-tts-mlx").
+  string model_name = 3;
+
+  // model_version is the version of the loaded model.
+  string model_version = 4;
+
+  // available_voices lists the prepared voice profile IDs.
+  repeated string available_voices = 5;
+}
+
+// LoadModelRequest requests loading the TTS model into memory.
+message LoadModelRequest {
+  // model_path optionally overrides the default model path.
+  optional string model_path = 1;
+}
+
+// LoadModelResponse contains the result of model loading.
+message LoadModelResponse {
+  // success indicates whether the model was loaded successfully.
+  bool success = 1;
+
+  // load_time_ms is the time taken to load the model in milliseconds.
+  int64 load_time_ms = 2;
+
+  // memory_used_mb is the memory consumed by the loaded model.
+  int64 memory_used_mb = 3;
+
+  // error_message contains error details if success is false.
+  optional string error_message = 4;
+}
+
+// UnloadModelRequest requests unloading the TTS model from memory.
+message UnloadModelRequest {}
+
+// UnloadModelResponse contains the result of model unloading.
+message UnloadModelResponse {
+  // success indicates whether the model was unloaded successfully.
+  bool success = 1;
+
+  // memory_freed_mb is the memory freed by unloading.
+  int64 memory_freed_mb = 2;
+}
+
+// RuntimeInfoRequest requests runtime environment information.
+message RuntimeInfoRequest {}
+
+// RuntimeInfoResponse contains runtime environment details.
+message RuntimeInfoResponse {
+  // device_type is the compute device ("mlx", "mps", "cpu", "cuda").
+  string device_type = 1;
+
+  // memory_used_mb is the current memory usage in MB.
+  int64 memory_used_mb = 2;
+
+  // memory_available_mb is the available memory in MB.
+  int64 memory_available_mb = 3;
+
+  // framework_version is the ML framework version (e.g., MLX version).
+  string framework_version = 4;
+
+  // python_version is the Python version if applicable.
+  string python_version = 5;
+
+  // model_info contains information about the loaded model.
+  optional ModelInfo model_info = 6;
+}
+
+// ModelInfo contains details about the loaded model.
+message ModelInfo {
+  // name is the model name.
+  string name = 1;
+
+  // version is the model version.
+  string version = 2;
+
+  // parameter_count is the number of model parameters.
+  int64 parameter_count = 3;
+
+  // supported_languages lists the supported language codes.
+  repeated string supported_languages = 4;
+}
