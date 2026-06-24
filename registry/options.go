@@ -13,10 +13,19 @@ func WithAPIKey(apiKey string) ProviderOption {
 	}
 }
 
-// WithBaseURL sets a custom base URL for the provider.
+// WithBaseURL sets a custom base URL for the provider (HTTP/HTTPS).
 func WithBaseURL(baseURL string) ProviderOption {
 	return func(c *ProviderConfig) {
 		c.BaseURL = baseURL
+	}
+}
+
+// WithEndpoint sets the provider endpoint for gRPC or other protocols.
+// For local providers using gRPC over UDS: "unix:///tmp/omnivoice-f5tts.sock"
+// For gRPC over TCP: "localhost:50051"
+func WithEndpoint(endpoint string) ProviderOption {
+	return func(c *ProviderConfig) {
+		c.Endpoint = endpoint
 	}
 }
 

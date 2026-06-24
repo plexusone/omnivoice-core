@@ -12,8 +12,13 @@ type ProviderConfig struct {
 	// APIKey is the authentication key for the provider.
 	APIKey string //nolint:gosec // G117: This is a config struct, not storing secrets
 
-	// BaseURL is an optional custom API endpoint.
+	// BaseURL is an optional custom API endpoint (HTTP/HTTPS).
 	BaseURL string
+
+	// Endpoint is the provider endpoint for gRPC or other protocols.
+	// For local providers using gRPC over UDS: "unix:///tmp/omnivoice-f5tts.sock"
+	// For gRPC over TCP: "localhost:50051"
+	Endpoint string
 
 	// Extensions holds provider-specific configuration.
 	Extensions map[string]any
