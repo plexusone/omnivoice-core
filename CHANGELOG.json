@@ -7,6 +7,60 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.15.0",
+      "date": "2026-06-27",
+      "highlights": [
+        { "description": "Local TTS providers via gRPC/UDS for Apple Silicon (F5-TTS MLX, Whisper MLX)" },
+        { "description": "CLI tool (omnictl) for proto generation, server management, and voice profile operations" },
+        { "description": "Voice profile library for managing reference audio for voice cloning" },
+        { "description": "Audio analysis utilities for selecting optimal voice cloning segments" }
+      ],
+      "added": [
+        { "description": "`providers/f5tts-mlx`: F5-TTS MLX local TTS provider with voice cloning support", "commit": "1e04188" },
+        { "description": "`providers/whisper-mlx`: Whisper MLX local STT provider with word-level timestamps", "commit": "64cc607" },
+        { "description": "`providers/f5tts`: Alternative F5-TTS provider implementation", "commit": "1877213" },
+        { "description": "`proto/localtts/v1`: gRPC service definitions for local TTS (synthesis, cloning, caching)", "commit": "d595631" },
+        { "description": "`proto/localstt/v1`: gRPC service definitions for local STT (transcription, streaming)", "commit": "d595631" },
+        { "description": "`proto/localvoice/v1`: Combined LocalVoice gRPC service definition", "commit": "4812493" },
+        { "description": "`cmd/omnictl`: CLI tool for omnivoice-core development and operations", "commit": "450a252" },
+        { "description": "`omnictl generate proto`: Generate Go/Python code from proto files", "commit": "450a252" },
+        { "description": "`omnictl server start/stop/list`: Manage local TTS/STT Python servers", "commit": "450a252" },
+        { "description": "`omnictl voice analyze/extract/list/create`: Voice profile management", "commit": "450a252" },
+        { "description": "`voices/library.go`: Voice profile library with List/Get/Create/Delete operations", "commit": "9eee152" },
+        { "description": "`config/paths.go`: Voice profile directory configuration with env var support", "commit": "770144b" },
+        { "description": "`audio/analyze.go`: WAV analysis for finding optimal voice cloning segments", "commit": "89dd250" },
+        { "description": "`ReadWAV`/`WriteWAV`: Read and write WAV files (8/16/24/32-bit PCM)", "commit": "89dd250" },
+        { "description": "`FindBestSegments`: Score audio segments for speech quality metrics", "commit": "89dd250" },
+        { "description": "`tts/local.go`: Capability interfaces for local providers (VoiceCloner, ProfileCacher, ModelManager)", "commit": "61d9858" },
+        { "description": "`registry.WithEndpoint()`: Endpoint option for gRPC-based providers", "commit": "f7c8d83" }
+      ],
+      "fixed": [
+        { "description": "WriteWAV now properly handles errors with helper function pattern", "commit": "cece0ad" },
+        { "description": "Use restrictive file permissions (0o600) for generated files and voice profiles", "commit": "4363c85" },
+        { "description": "Handle unchecked errors in CLI commands (Signal, MarkFlagRequired)", "commit": "6654324" },
+        { "description": "Add nolint comments for safe integer conversions in whisper-mlx", "commit": "65d33b9" }
+      ],
+      "refactored": [
+        { "description": "Remove unused mutex field from f5tts provider", "commit": "3eec621" }
+      ],
+      "documentation": [
+        { "description": "`docs/local-tts.md`: Comprehensive guide for local TTS/STT providers", "commit": "140fb86" },
+        { "description": "Updated README.md with local provider architecture and examples", "commit": "bdd4d76" },
+        { "description": "Updated docs/index.md with local providers and CLI sections", "commit": "bdd4d76" },
+        { "description": "`docs/specs/features/local/`: PRD, TRD, and roadmap for local providers", "commit": "76c6fea" }
+      ],
+      "dependencies": [
+        { "description": "Add `github.com/spf13/cobra` v1.10.2 for CLI framework", "commit": "e603156" },
+        { "description": "Bump `github.com/redis/go-redis/v9` from 9.20.1 to 9.21.0", "commit": "32a96ad" },
+        { "description": "Bump `actions/checkout` from 6 to 7", "commit": "1cd9d21" }
+      ],
+      "tests": [
+        { "description": "Unit tests for WAV analysis and segment scoring", "commit": "89dd250" },
+        { "description": "Tests for F5-TTS MLX provider capabilities", "commit": "1e04188" },
+        { "description": "Tests for Whisper MLX provider transcription", "commit": "64cc607" }
+      ]
+    },
+    {
       "version": "v0.14.0",
       "date": "2026-06-15",
       "highlights": [
