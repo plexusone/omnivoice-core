@@ -1,0 +1,18 @@
+# F5-TTS MLX gRPC Server Dependencies
+#
+# Install: pip install -r requirements.txt
+
+# gRPC
+grpcio>=1.60.0
+grpcio-tools>=1.60.0
+
+# MLX and F5-TTS
+mlx>=0.5.0
+f5-tts-mlx>=0.2.0
+
+# Audio processing
+soundfile>=0.12.0
+numpy>=1.24.0
+
+# Optional: for better audio format support
+pydub>=0.25.0
