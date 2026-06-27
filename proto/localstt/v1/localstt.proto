@@ -1,0 +1,313 @@
+// Copyright 2024 PlexusOne. All rights reserved.
+// Use of this source code is governed by the MIT license.
+
+syntax = "proto3";
+
+package omnivoice.localstt.v1;
+
+option go_package = "github.com/plexusone/omnivoice-core/proto/localstt/v1;localsttv1";
+
+// LocalSTT service for local STT inference via gRPC over Unix Domain Socket.
+//
+// This service is implemented by local STT model servers (Whisper MLX, etc.)
+// and consumed by Go provider clients in omnivoice-core/providers/whisper-mlx, etc.
+//
+// Connection: unix:///tmp/omnivoice-{provider}.sock
+service LocalSTT {
+  // Transcribe converts audio to text (batch mode).
+  rpc Transcribe(TranscribeRequest) returns (TranscribeResponse);
+
+  // TranscribeStream performs streaming transcription.
+  // Audio chunks are sent as a stream, transcription results are streamed back.
+  rpc TranscribeStream(stream AudioChunk) returns (stream TranscriptEvent);
+
+  // Health returns the health status and model information.
+  rpc Health(HealthRequest) returns (HealthResponse);
+
+  // LoadModel loads the STT model into memory.
+  // Call this before Transcribe if the model is not auto-loaded.
+  rpc LoadModel(LoadModelRequest) returns (LoadModelResponse);
+
+  // UnloadModel unloads the model from memory to free resources.
+  rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse);
+
+  // RuntimeInfo returns information about the runtime environment.
+  rpc RuntimeInfo(RuntimeInfoRequest) returns (RuntimeInfoResponse);
+
+  // ListModels returns available models.
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+}
+
+// TranscribeRequest is a request to transcribe audio.
+message TranscribeRequest {
+  // audio is the audio data to transcribe.
+  bytes audio = 1;
+
+  // config contains transcription configuration.
+  TranscriptionConfig config = 2;
+}
+
+// TranscriptionConfig configures a transcription request.
+message TranscriptionConfig {
+  // language is the BCP-47 language code (e.g., "en", "zh").
+  // Leave empty for automatic detection.
+  optional string language = 1;
+
+  // model is the model variant to use (e.g., "tiny", "base", "small", "medium", "large", "turbo").
+  optional string model = 2;
+
+  // enable_word_timestamps includes word-level timestamps.
+  bool enable_word_timestamps = 3;
+
+  // enable_punctuation adds punctuation to transcription.
+  bool enable_punctuation = 4;
+
+  // task is "transcribe" (default) or "translate" (to English).
+  optional string task = 5;
+
+  // initial_prompt is optional text to condition the model.
+  optional string initial_prompt = 6;
+
+  // input_format describes the audio format.
+  AudioFormat input_format = 7;
+}
+
+// AudioFormat describes the audio encoding.
+message AudioFormat {
+  // encoding is the audio encoding ("wav", "mp3", "flac", "pcm_s16le", "pcm_f32le").
+  string encoding = 1;
+
+  // sample_rate is the sample rate in Hz (e.g., 16000, 44100).
+  int32 sample_rate = 2;
+
+  // channels is the number of audio channels (1 = mono, 2 = stereo).
+  int32 channels = 3;
+}
+
+// TranscribeResponse contains the transcription result.
+message TranscribeResponse {
+  // text is the full transcription text.
+  string text = 1;
+
+  // segments contains segment-level details.
+  repeated Segment segments = 2;
+
+  // language is the detected language.
+  string language = 3;
+
+  // language_confidence is the confidence in language detection (0.0 to 1.0).
+  float language_confidence = 4;
+
+  // duration_ms is the audio duration in milliseconds.
+  int64 duration_ms = 5;
+
+  // processing_time_ms is the time taken to transcribe in milliseconds.
+  int64 processing_time_ms = 6;
+}
+
+// Segment represents a segment of transcription.
+message Segment {
+  // id is the segment identifier.
+  int32 id = 1;
+
+  // text is the transcribed text for this segment.
+  string text = 2;
+
+  // start_ms is when the segment starts in milliseconds.
+  int64 start_ms = 3;
+
+  // end_ms is when the segment ends in milliseconds.
+  int64 end_ms = 4;
+
+  // confidence is the average confidence for this segment (0.0 to 1.0).
+  float confidence = 5;
+
+  // words contains word-level details (if enabled).
+  repeated Word words = 6;
+}
+
+// Word represents a single transcribed word with timing.
+message Word {
+  // text is the transcribed word.
+  string text = 1;
+
+  // start_ms is when the word starts in milliseconds.
+  int64 start_ms = 2;
+
+  // end_ms is when the word ends in milliseconds.
+  int64 end_ms = 3;
+
+  // confidence is the recognition confidence (0.0 to 1.0).
+  float confidence = 4;
+}
+
+// AudioChunk represents a chunk of audio for streaming input.
+message AudioChunk {
+  // data contains raw audio bytes.
+  bytes data = 1;
+
+  // is_final is true for the last chunk.
+  bool is_final = 2;
+
+  // config is included only on the first chunk.
+  optional TranscriptionConfig config = 3;
+}
+
+// TranscriptEvent represents a streaming transcription event.
+message TranscriptEvent {
+  // type is the event type.
+  EventType type = 1;
+
+  // transcript is the current transcript (partial or final).
+  string transcript = 2;
+
+  // is_final indicates if this is a final (non-interim) result.
+  bool is_final = 3;
+
+  // segment contains segment details for final results.
+  optional Segment segment = 4;
+
+  // error contains error details if type is EVENT_TYPE_ERROR.
+  optional string error = 5;
+}
+
+// EventType identifies the type of stream event.
+enum EventType {
+  // EVENT_TYPE_UNSPECIFIED is the default value.
+  EVENT_TYPE_UNSPECIFIED = 0;
+
+  // EVENT_TYPE_TRANSCRIPT is a transcription result (partial or final).
+  EVENT_TYPE_TRANSCRIPT = 1;
+
+  // EVENT_TYPE_SPEECH_START indicates the user started speaking.
+  EVENT_TYPE_SPEECH_START = 2;
+
+  // EVENT_TYPE_SPEECH_END indicates the user stopped speaking.
+  EVENT_TYPE_SPEECH_END = 3;
+
+  // EVENT_TYPE_ERROR indicates an error occurred.
+  EVENT_TYPE_ERROR = 4;
+}
+
+// HealthRequest is an empty request for health checking.
+message HealthRequest {}
+
+// HealthResponse contains health and model status information.
+message HealthResponse {
+  // healthy indicates whether the service is operational.
+  bool healthy = 1;
+
+  // model_loaded indicates whether the STT model is loaded in memory.
+  bool model_loaded = 2;
+
+  // model_name is the name of the loaded model (e.g., "whisper-large-v3-turbo").
+  string model_name = 3;
+
+  // model_version is the version of the loaded model.
+  string model_version = 4;
+
+  // supported_languages lists the supported language codes.
+  repeated string supported_languages = 5;
+}
+
+// LoadModelRequest requests loading the STT model into memory.
+message LoadModelRequest {
+  // model is the model variant to load (e.g., "tiny", "large-v3-turbo").
+  optional string model = 1;
+
+  // model_path optionally overrides the default model path.
+  optional string model_path = 2;
+}
+
+// LoadModelResponse contains the result of model loading.
+message LoadModelResponse {
+  // success indicates whether the model was loaded successfully.
+  bool success = 1;
+
+  // load_time_ms is the time taken to load the model in milliseconds.
+  int64 load_time_ms = 2;
+
+  // memory_used_mb is the memory consumed by the loaded model.
+  int64 memory_used_mb = 3;
+
+  // model_name is the name of the loaded model.
+  string model_name = 4;
+
+  // error_message contains error details if success is false.
+  optional string error_message = 5;
+}
+
+// UnloadModelRequest requests unloading the STT model from memory.
+message UnloadModelRequest {}
+
+// UnloadModelResponse contains the result of model unloading.
+message UnloadModelResponse {
+  // success indicates whether the model was unloaded successfully.
+  bool success = 1;
+
+  // memory_freed_mb is the memory freed by unloading.
+  int64 memory_freed_mb = 2;
+}
+
+// RuntimeInfoRequest requests runtime environment information.
+message RuntimeInfoRequest {}
+
+// RuntimeInfoResponse contains runtime environment details.
+message RuntimeInfoResponse {
+  // device_type is the compute device ("mlx", "mps", "cpu", "cuda").
+  string device_type = 1;
+
+  // memory_used_mb is the current memory usage in MB.
+  int64 memory_used_mb = 2;
+
+  // memory_available_mb is the available memory in MB.
+  int64 memory_available_mb = 3;
+
+  // framework_version is the ML framework version (e.g., MLX version).
+  string framework_version = 4;
+
+  // python_version is the Python version if applicable.
+  string python_version = 5;
+
+  // model_info contains information about the loaded model.
+  optional ModelInfo model_info = 6;
+}
+
+// ModelInfo contains details about a loaded model.
+message ModelInfo {
+  // name is the model name (e.g., "whisper-large-v3-turbo").
+  string name = 1;
+
+  // variant is the model variant (e.g., "mlx-q8").
+  string variant = 2;
+
+  // parameter_count is the number of model parameters.
+  int64 parameter_count = 3;
+
+  // supported_languages lists the supported language codes.
+  repeated string supported_languages = 4;
+}
+
+// ListModelsRequest requests available models.
+message ListModelsRequest {}
+
+// ListModelsResponse contains available models.
+message ListModelsResponse {
+  // models lists available model variants.
+  repeated AvailableModel models = 1;
+}
+
+// AvailableModel describes an available model.
+message AvailableModel {
+  // name is the model name (e.g., "whisper-tiny", "whisper-large-v3-turbo").
+  string name = 1;
+
+  // description is a human-readable description.
+  string description = 2;
+
+  // size_mb is the model size in megabytes.
+  int64 size_mb = 3;
+
+  // is_downloaded indicates whether the model is locally cached.
+  bool is_downloaded = 4;
+}
