@@ -75,10 +75,17 @@ Audio In → [OpenAI Realtime / Gemini Live] → Audio Out
 │         │                  │                           │                    │
 │         ▼                  ▼                           ▼                    │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                         Provider Layer                              │    │
+│  │                      Cloud Provider Layer                           │    │
 │  ├─────────────┬─────────────┬─────────────┬─────────────┬─────────────┤    │
 │  │ ElevenLabs  │  Deepgram   │ Google Cloud│    AWS      │   Azure     │    │
 │  │ Cartesia    │  Whisper    │ AssemblyAI  │   Polly     │   Speech    │    │
+│  └─────────────┴─────────────┴─────────────┴─────────────┴─────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                      Local Provider Layer                           │    │
+│  ├─────────────┬─────────────┬─────────────┬─────────────┬─────────────┤    │
+│  │  F5-TTS     │ Whisper MLX │    Piper    │  Apple TTS  │   (more)    │    │
+│  │  (MLX)      │   (MLX)     │   (ONNX)    │   (macOS)   │             │    │
 │  └─────────────┴─────────────┴─────────────┴─────────────┴─────────────┘    │
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
@@ -187,6 +194,28 @@ omnivoice/
 ├── registry/               # Provider discovery types
 │   ├── registry.go         # Registry interface, factory types, Gateway/RealtimeProvider interfaces
 │   └── options.go          # ProviderConfig, ProviderOption (WithVoice, WithModel, etc.)
+│
+├── providers/              # Built-in local provider implementations
+│   ├── f5tts-mlx/          # F5-TTS MLX local TTS provider
+│   │   ├── f5tts.go        # gRPC client implementing TTS interfaces
+│   │   └── server/         # Python gRPC server
+│   └── whisper-mlx/        # Whisper MLX local STT provider
+│       ├── whisper.go      # gRPC client implementing STT interfaces
+│       └── server/         # Python gRPC server
+│
+├── proto/                  # Protocol Buffer definitions
+│   ├── localtts/v1/        # Local TTS service proto
+│   ├── localstt/v1/        # Local STT service proto
+│   └── localvoice/v1/      # Unified local voice service proto
+│
+├── config/                 # Configuration utilities
+│   └── paths.go            # Voice profile directory paths
+│
+├── voices/                 # Voice profile management
+│   └── library.go          # Voice profile library (list, create, delete)
+│
+├── cmd/omnictl/            # Development CLI tool
+│   └── cmd/                # CLI commands (generate, server, voice, health)
 │
 ├── subtitle/               # Subtitle generation
 │   └── subtitle.go         # SRT/VTT from transcription results
@@ -390,6 +419,8 @@ Poor: > 1500ms feels laggy
 
 ### TTS Providers
 
+#### Cloud Providers
+
 | Provider | Latency | Quality | Voices | Streaming | Price |
 |----------|---------|---------|--------|-----------|-------|
 | ElevenLabs | Low | Excellent | 5000+ | Yes | $$$ |
@@ -397,6 +428,36 @@ Poor: > 1500ms feels laggy
 | AWS Polly | Low | Good | 60+ | Yes | $ |
 | Google TTS | Low | Good | 200+ | Yes | $ |
 | Azure Speech | Low | Excellent | 400+ | Yes | $$ |
+
+#### Local Providers (Apple Silicon)
+
+| Provider | Model | Voice Cloning | Latency | Price |
+|----------|-------|---------------|---------|-------|
+| **F5-TTS MLX** | F5-TTS | Yes | ~500ms | Free |
+| **Whisper MLX** | Whisper | N/A (STT) | ~200ms | Free |
+| Piper | Piper | No | ~100ms | Free (planned) |
+
+Local providers run on your hardware via gRPC over Unix Domain Socket:
+
+```go
+import (
+    "github.com/plexusone/omnivoice"
+    _ "github.com/plexusone/omnivoice-core/providers/f5tts-mlx"
+)
+
+// Use F5-TTS for local synthesis
+provider, _ := omnivoice.GetTTSProvider("f5tts-mlx")
+
+// Load model (downloads ~2GB on first run)
+if loader, ok := provider.(tts.ModelManager); ok {
+    loader.LoadModel(ctx)
+}
+
+// Synthesize locally - no API calls
+result, _ := provider.Synthesize(ctx, "Hello from local TTS!", tts.SynthesisConfig{})
+```
+
+See the [Local TTS Providers](https://plexusone.github.io/omnivoice-core/local-tts/) guide for setup instructions.
 
 ### STT Providers
 

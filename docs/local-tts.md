@@ -21,7 +21,8 @@ Local providers communicate via gRPC over Unix Domain Socket for low-latency, se
 
 | Provider | Model | Hardware | Voice Cloning | Status |
 |----------|-------|----------|---------------|--------|
-| **F5-TTS** | F5-TTS MLX | Apple Silicon | Yes | Available |
+| **F5-TTS MLX** | F5-TTS | Apple Silicon | Yes | Available |
+| **Whisper MLX** | Whisper | Apple Silicon | N/A (STT) | Available |
 | Qwen3-TTS | Qwen3-TTS | Apple Silicon / CUDA | Yes | Planned |
 | Piper | Piper | CPU | No | Planned |
 | Apple TTS | AVSpeechSynthesizer | macOS | No | Planned |
@@ -40,7 +41,7 @@ F5-TTS is a high-quality voice cloning model that supports zero-shot synthesis f
 
 ```bash
 # Navigate to the server directory
-cd omnivoice-core/providers/f5tts/server
+cd omnivoice-core/providers/f5tts-mlx/server
 
 # Create ARM64 virtual environment
 arch -arm64 python3 -m venv .venv
@@ -69,11 +70,11 @@ The server listens on `unix:///tmp/omnivoice-f5tts.sock` by default.
 ```go
 import (
     "github.com/plexusone/omnivoice"
-    _ "github.com/plexusone/omnivoice-core/providers/f5tts" // Auto-register
+    _ "github.com/plexusone/omnivoice-core/providers/f5tts-mlx" // Auto-register
 )
 
 // Create provider using the registry
-provider, err := omnivoice.GetTTSProvider("f5tts",
+provider, err := omnivoice.GetTTSProvider("f5tts-mlx",
     omnivoice.WithEndpoint("unix:///tmp/omnivoice-f5tts.sock"),
 )
 if err != nil {

@@ -45,6 +45,8 @@ Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents ac
 - **Modular Architecture** - Use only the layers you need
 - **Production Ready** - Designed for real-time, low-latency voice applications
 - **Full Stack** - From phone calls to audio processing
+- **Local Providers** - Run TTS/STT on your own hardware with F5-TTS MLX, Whisper MLX (Apple Silicon)
+- **Voice Cloning** - Zero-shot voice cloning from reference audio
 - **Observability** - Built-in hooks for TTS/STT instrumentation and call event tracking
 - **Multi-Provider Failover** - CallSystem client with automatic fallback support
 - **Resilient Error Handling** - Smart fallback with error classification and retry logic
@@ -199,3 +201,59 @@ for _, seg := range transcript.Segments {
 ```
 
 See the [Transcript Format](transcript.md) guide for full documentation.
+
+## Local TTS/STT Providers
+
+Run TTS and STT locally on Apple Silicon with voice cloning support:
+
+```go
+import (
+    "github.com/plexusone/omnivoice"
+    _ "github.com/plexusone/omnivoice-core/providers/f5tts-mlx"
+    _ "github.com/plexusone/omnivoice-core/providers/whisper-mlx"
+)
+
+// Get the F5-TTS local provider
+provider, err := omnivoice.GetTTSProvider("f5tts-mlx")
+
+// Load the model (~2GB download on first run)
+if loader, ok := provider.(tts.ModelManager); ok {
+    loader.LoadModel(ctx)
+}
+
+// Synthesize locally - no API calls, no costs
+result, err := provider.Synthesize(ctx, "Hello from local TTS!", tts.SynthesisConfig{
+    OutputFormat: "wav",
+})
+
+// Voice cloning with reference audio
+if synth, ok := provider.(tts.ReferenceSynthesizer); ok {
+    result, err := synth.SynthesizeWithReference(ctx, tts.ReferenceSynthesizeRequest{
+        Text:           "Clone my voice!",
+        ReferenceAudio: refAudioBytes,
+        ReferenceText:  "Transcript of reference audio",
+    })
+}
+```
+
+See the [Local TTS Providers](local-tts.md) guide for setup and usage.
+
+## CLI Tool (omnictl)
+
+The `omnictl` CLI provides development utilities:
+
+```bash
+# Generate proto code
+omnictl generate proto
+
+# Manage local servers
+omnictl server start f5tts
+omnictl server list
+omnictl health
+
+# Voice profile management
+omnictl voice analyze input.wav     # Find best segments for cloning
+omnictl voice extract input.wav     # Extract segment to reference.wav
+omnictl voice list                  # List voice profiles
+omnictl voice create my-voice       # Create new profile
+```
