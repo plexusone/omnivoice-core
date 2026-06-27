@@ -142,13 +142,13 @@ func init() {
 	voiceExtractCmd.Flags().Float64Var(&voiceExtractStart, "start", 0, "start time in seconds")
 	voiceExtractCmd.Flags().Float64Var(&voiceExtractDuration, "duration", 15.0, "duration in seconds")
 	voiceExtractCmd.Flags().BoolVar(&voiceExtractBest, "best", false, "automatically extract the best segment")
-	voiceExtractCmd.MarkFlagRequired("output")
+	_ = voiceExtractCmd.MarkFlagRequired("output")
 
 	// Create flags
 	voiceCreateCmd.Flags().StringVar(&voiceCreateSlug, "slug", "", "profile slug/ID (required)")
 	voiceCreateCmd.Flags().StringVar(&voiceCreateTranscript, "transcript", "", "transcript text")
 	voiceCreateCmd.Flags().StringVar(&voiceCreateTranscriptFile, "transcript-file", "", "path to transcript file")
-	voiceCreateCmd.MarkFlagRequired("slug")
+	_ = voiceCreateCmd.MarkFlagRequired("slug")
 }
 
 func runVoiceAnalyze(cmd *cobra.Command, args []string) error {

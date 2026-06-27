@@ -172,7 +172,7 @@ func runServerStart(cmd *cobra.Command, args []string) error {
 	select {
 	case <-sigChan:
 		fmt.Println("\nStopping server...")
-		serverCmd.Process.Signal(syscall.SIGTERM)
+		_ = serverCmd.Process.Signal(syscall.SIGTERM)
 		<-done
 	case err := <-done:
 		if err != nil {
