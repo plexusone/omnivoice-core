@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"sync"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -52,7 +51,6 @@ type Provider struct {
 	conn   *grpc.ClientConn
 	client pb.LocalVoiceClient
 
-	mu       sync.RWMutex
 	endpoint string
 }
 
