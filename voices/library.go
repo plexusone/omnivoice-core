@@ -204,12 +204,12 @@ func (l *Library) Create(slug string, referenceAudio []byte, referenceText strin
 	}
 
 	// Write reference audio
-	if err := os.WriteFile(filepath.Join(dir, "reference.wav"), referenceAudio, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "reference.wav"), referenceAudio, 0o600); err != nil {
 		return fmt.Errorf("failed to write reference.wav: %w", err)
 	}
 
 	// Write reference text
-	if err := os.WriteFile(filepath.Join(dir, "reference.txt"), []byte(referenceText), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "reference.txt"), []byte(referenceText), 0o600); err != nil {
 		return fmt.Errorf("failed to write reference.txt: %w", err)
 	}
 
@@ -219,7 +219,7 @@ func (l *Library) Create(slug string, referenceAudio []byte, referenceText strin
 		if err != nil {
 			return fmt.Errorf("failed to marshal metadata: %w", err)
 		}
-		if err := os.WriteFile(filepath.Join(dir, "metadata.json"), data, 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(dir, "metadata.json"), data, 0o600); err != nil {
 			return fmt.Errorf("failed to write metadata.json: %w", err)
 		}
 	}

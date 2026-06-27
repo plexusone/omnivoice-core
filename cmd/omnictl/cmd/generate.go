@@ -256,7 +256,7 @@ func fixPythonImports(grpcFile, protoName string) error {
 	}
 
 	content = replaceAll(content, oldImport, newImport)
-	return os.WriteFile(grpcFile, []byte(content), 0644)
+	return os.WriteFile(grpcFile, []byte(content), 0o600) //nolint:gosec // G703: path is intentionally user-provided
 }
 
 // replaceAll replaces all occurrences of old with new in s
