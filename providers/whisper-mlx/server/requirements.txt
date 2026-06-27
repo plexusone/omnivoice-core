@@ -1,0 +1,16 @@
+# Whisper MLX gRPC Server Dependencies
+# Requires Apple Silicon (M1/M2/M3/M4) for MLX acceleration
+
+# MLX framework for Apple Silicon
+mlx>=0.22.0
+
+# Whisper MLX implementation
+mlx-whisper>=0.4.0
+
+# gRPC for Python
+grpcio>=1.70.0
+grpcio-tools>=1.70.0
+
+# Audio processing
+soundfile>=0.13.0
+numpy>=2.0.0
