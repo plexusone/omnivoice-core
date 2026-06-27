@@ -110,8 +110,8 @@ func (p *Provider) Transcribe(ctx context.Context, audio []byte, config stt.Tran
 	if config.Encoding != "" || config.SampleRate > 0 {
 		pbConfig.InputFormat = &pb.AudioFormat{
 			Encoding:   config.Encoding,
-			SampleRate: int32(config.SampleRate),
-			Channels:   int32(config.Channels),
+			SampleRate: int32(config.SampleRate), //nolint:gosec // G115: sample rate is always within int32 range
+			Channels:   int32(config.Channels),   //nolint:gosec // G115: channels is always within int32 range
 		}
 	}
 
