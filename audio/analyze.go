@@ -183,7 +183,7 @@ func bytesToSamples(data []byte, bitsPerSample, numChannels uint16) ([]float64, 
 				sample = (float64(data[chOffset]) - 128) / 128
 			case 16:
 				// 16-bit is signed little-endian
-				val := int16(binary.LittleEndian.Uint16(data[chOffset : chOffset+2]))
+				val := int16(binary.LittleEndian.Uint16(data[chOffset : chOffset+2])) //nolint:gosec // G115: intentional bit reinterpretation
 				sample = float64(val) / 32768
 			case 24:
 				// 24-bit is signed little-endian
@@ -194,7 +194,7 @@ func bytesToSamples(data []byte, bitsPerSample, numChannels uint16) ([]float64, 
 				sample = float64(val) / 8388608
 			case 32:
 				// 32-bit is signed little-endian
-				val := int32(binary.LittleEndian.Uint32(data[chOffset : chOffset+4]))
+				val := int32(binary.LittleEndian.Uint32(data[chOffset : chOffset+4])) //nolint:gosec // G115: intentional bit reinterpretation
 				sample = float64(val) / 2147483648
 			default:
 				return nil, fmt.Errorf("unsupported bits per sample: %d", bitsPerSample)
@@ -439,24 +439,42 @@ func WriteWAV(path string, samples []float64, sampleRate uint32) error {
 	dataSize := numSamples * 2 // 16-bit = 2 bytes per sample
 	fileSize := 36 + dataSize
 
+	// Use a helper to track write errors
+	var writeErr error
+	write := func(data any) {
+		if writeErr != nil {
+			return
+		}
+		switch v := data.(type) {
+		case []byte:
+			_, writeErr = f.Write(v)
+		default:
+			writeErr = binary.Write(f, binary.LittleEndian, v)
+		}
+	}
+
 	// RIFF header
-	f.Write([]byte("RIFF"))
-	binary.Write(f, binary.LittleEndian, uint32(fileSize))
-	f.Write([]byte("WAVE"))
+	write([]byte("RIFF"))
+	write(uint32(fileSize)) //nolint:gosec // G115: fileSize is bounded by audio data size
+	write([]byte("WAVE"))
 
 	// fmt chunk
-	f.Write([]byte("fmt "))
-	binary.Write(f, binary.LittleEndian, uint32(16))        // Chunk size
-	binary.Write(f, binary.LittleEndian, uint16(1))         // Audio format (PCM)
-	binary.Write(f, binary.LittleEndian, uint16(1))         // Num channels (mono)
-	binary.Write(f, binary.LittleEndian, sampleRate)        // Sample rate
-	binary.Write(f, binary.LittleEndian, sampleRate*2)      // Byte rate
-	binary.Write(f, binary.LittleEndian, uint16(2))         // Block align
-	binary.Write(f, binary.LittleEndian, uint16(16))        // Bits per sample
+	write([]byte("fmt "))
+	write(uint32(16))     // Chunk size
+	write(uint16(1))      // Audio format (PCM)
+	write(uint16(1))      // Num channels (mono)
+	write(sampleRate)     // Sample rate
+	write(sampleRate * 2) // Byte rate
+	write(uint16(2))      // Block align
+	write(uint16(16))     // Bits per sample
 
 	// data chunk
-	f.Write([]byte("data"))
-	binary.Write(f, binary.LittleEndian, uint32(dataSize))
+	write([]byte("data"))
+	write(uint32(dataSize)) //nolint:gosec // G115: dataSize is bounded by audio data size
+
+	if writeErr != nil {
+		return fmt.Errorf("failed to write WAV header: %w", writeErr)
+	}
 
 	// Write samples as 16-bit signed integers
 	for _, s := range samples {
@@ -467,7 +485,9 @@ func WriteWAV(path string, samples []float64, sampleRate uint32) error {
 			s = -1
 		}
 		val := int16(s * 32767)
-		binary.Write(f, binary.LittleEndian, val)
+		if err := binary.Write(f, binary.LittleEndian, val); err != nil {
+			return fmt.Errorf("failed to write sample: %w", err)
+		}
 	}
 
 	return nil
