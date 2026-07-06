@@ -3,8 +3,8 @@
 [![Go CI][go-ci-svg]][go-ci-url]
 [![Go Lint][go-lint-svg]][go-lint-url]
 [![Go SAST][go-sast-svg]][go-sast-url]
-[![Go Report Card][goreport-svg]][goreport-url]
 [![Docs][docs-godoc-svg]][docs-godoc-url]
+[![Docs][docs-mkdoc-svg]][docs-mkdoc-url]
 [![Visualization][viz-svg]][viz-url]
 [![License][license-svg]][license-url]
 
@@ -14,10 +14,10 @@
  [go-lint-url]: https://github.com/plexusone/omnivoice-core/actions/workflows/go-lint.yaml
  [go-sast-svg]: https://github.com/plexusone/omnivoice-core/actions/workflows/go-sast-codeql.yaml/badge.svg?branch=main
  [go-sast-url]: https://github.com/plexusone/omnivoice-core/actions/workflows/go-sast-codeql.yaml
- [goreport-svg]: https://goreportcard.com/badge/github.com/plexusone/omnivoice-core
- [goreport-url]: https://goreportcard.com/report/github.com/plexusone/omnivoice-core
  [docs-godoc-svg]: https://pkg.go.dev/badge/github.com/plexusone/omnivoice-core
  [docs-godoc-url]: https://pkg.go.dev/github.com/plexusone/omnivoice-core
+ [docs-mkdoc-svg]: https://img.shields.io/badge/Go-dev%20guide-blue.svg
+ [docs-mkdoc-url]: https://plexusone.dev/omni-deepgram
  [viz-svg]: https://img.shields.io/badge/visualizaton-Go-blue.svg
  [viz-url]: https://mango-dune-07a8b7110.1.azurestaticapps.net/?repo=plexusone%2Fomnivoice-core
  [loc-svg]: https://tokei.rs/b1/github/plexusone/omnivoice-core
