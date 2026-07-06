@@ -17,13 +17,13 @@
  [docs-godoc-svg]: https://pkg.go.dev/badge/github.com/plexusone/omnivoice-core
  [docs-godoc-url]: https://pkg.go.dev/github.com/plexusone/omnivoice-core
  [docs-mkdoc-svg]: https://img.shields.io/badge/Go-dev%20guide-blue.svg
- [docs-mkdoc-url]: https://plexusone.dev/omni-deepgram
+ [docs-mkdoc-url]: https://plexusone.dev/omnivoice-core
  [viz-svg]: https://img.shields.io/badge/visualizaton-Go-blue.svg
  [viz-url]: https://mango-dune-07a8b7110.1.azurestaticapps.net/?repo=plexusone%2Fomnivoice-core
  [loc-svg]: https://tokei.rs/b1/github/plexusone/omnivoice-core
  [repo-url]: https://github.com/plexusone/omnivoice-core
  [license-svg]: https://img.shields.io/badge/license-MIT-blue.svg
- [license-url]: https://github.com/plexusone/omnivoice-core/blob/master/LICENSE
+ [license-url]: https://github.com/plexusone/omnivoice-core/blob/main/LICENSE
 
 Voice abstraction layer for AgentPlexus supporting TTS, STT, and Voice Agents across multiple providers and transport protocols.
 
