@@ -3,7 +3,7 @@ module github.com/plexusone/omnivoice-core
 go 1.26.4
 
 require (
-	github.com/grokify/mogo v0.74.9
+	github.com/grokify/mogo v0.75.0
 	github.com/plexusone/terminology-spec v0.1.0
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/spf13/cobra v1.10.2
