@@ -47,6 +47,7 @@ nav:
   - Home: index.md
   - Guides:
       - Outbound Calls and Keypad Digits: guides/outbound-calls.md
+      - Raw Call Audio (Audio Mode): guides/call-audio.md
       - Local TTS/STT Providers: guides/local-tts.md
       - Terminology (Pronunciation & Case): guides/terminology.md
       - Transcript Format: guides/transcript.md
