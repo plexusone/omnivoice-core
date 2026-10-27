@@ -75,6 +75,13 @@ const (
 	// PipelineModeRealtime uses native voice-to-voice via realtime.Provider.
 	// Lower latency (~100-200ms) but requires OpenAI Realtime or Gemini Live.
 	PipelineModeRealtime PipelineMode = "realtime"
+
+	// PipelineModeAudio runs no voice pipeline: the gateway hands the call's
+	// audio to the application and plays the application's audio into the
+	// call. Sessions implement AudioSession. Use it when the application
+	// decides when to listen and speak, for example an agent attending a
+	// meeting by phone.
+	PipelineModeAudio PipelineMode = "audio"
 )
 
 // CallInfo contains information about a call.
