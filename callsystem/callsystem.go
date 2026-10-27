@@ -3,6 +3,7 @@ package callsystem
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/plexusone/omnivoice-core/agent"
@@ -152,6 +153,10 @@ type CallOptions struct {
 	AgentConfig    *agent.Config
 	StatusCallback string
 	Observer       observability.VoiceObserver
+
+	// SendDigits holds keypad tones (DTMF) to send once the call is answered.
+	// See WithSendDigits for the notation.
+	SendDigits string
 }
 
 // WithFrom sets the outbound caller ID.
@@ -208,6 +213,34 @@ func WithObserver(observer observability.VoiceObserver) CallOption {
 	return func(o *CallOptions) {
 		o.Observer = observer
 	}
+}
+
+// WithSendDigits sends keypad tones (DTMF) once the outbound call is answered,
+// for example to enter a conference ID and passcode on a meeting dial-in line.
+//
+// Digits use dial-string notation: 0-9, *, #, and A-D are tones; w pauses for
+// half a second and W pauses for one second. For example, "WW85012345678#"
+// waits two seconds and then enters a meeting ID followed by #.
+//
+// Providers validate the digits with ValidateSendDigits and return an error
+// from MakeCall when they are invalid.
+func WithSendDigits(digits string) CallOption {
+	return func(o *CallOptions) {
+		o.SendDigits = digits
+	}
+}
+
+// ValidateSendDigits reports whether digits uses only the characters allowed
+// by WithSendDigits. An empty string is valid and means no digits are sent.
+func ValidateSendDigits(digits string) error {
+	for i, r := range digits {
+		switch {
+		case r >= '0' && r <= '9', r >= 'A' && r <= 'D', r == '*', r == '#', r == 'w', r == 'W':
+		default:
+			return fmt.Errorf("invalid send digit %q at position %d: allowed are 0-9, *, #, A-D, w, W", r, i)
+		}
+	}
+	return nil
 }
 
 // ObservableCallSystem extends CallSystem with observability support.
