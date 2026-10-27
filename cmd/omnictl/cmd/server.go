@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -172,8 +173,17 @@ func runServerStart(cmd *cobra.Command, args []string) error {
 	select {
 	case <-sigChan:
 		fmt.Println("\nStopping server...")
-		_ = serverCmd.Process.Signal(syscall.SIGTERM)
-		<-done
+		if err := serverCmd.Process.Signal(syscall.SIGTERM); err != nil {
+			return fmt.Errorf("failed to stop server: %w", err)
+		}
+		// The server exits with a non-zero status or a signal status when it
+		// is stopped with SIGTERM; only other errors are failures.
+		if err := <-done; err != nil {
+			var exitErr *exec.ExitError
+			if !errors.As(err, &exitErr) {
+				return fmt.Errorf("server exited with error: %w", err)
+			}
+		}
 	case err := <-done:
 		if err != nil {
 			return fmt.Errorf("server exited with error: %w", err)
@@ -181,7 +191,9 @@ func runServerStart(cmd *cobra.Command, args []string) error {
 	}
 
 	// Clean up socket
-	os.Remove(server.socket)
+	if err := os.Remove(server.socket); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to remove socket: %w", err)
+	}
 	fmt.Println("Server stopped.")
 	return nil
 }
