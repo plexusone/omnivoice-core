@@ -7,6 +7,22 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.18.0",
+      "date": "2026-10-27",
+      "highlights": [
+        { "description": "Audio pipeline mode: voice gateways hand raw call audio to the application instead of running STT, LLM, and TTS" }
+      ],
+      "added": [
+        { "description": "`gateway.PipelineModeAudio` pipeline mode", "commit": "360993b" },
+        { "description": "`gateway.AudioSession` interface with `AudioFormat`, `ReceiveAudio`, `SendAudio`, and `ClearAudio`", "commit": "360993b" },
+        { "description": "`gateway.ErrAudioNotConnected` and `gateway.ErrSessionClosed` for sending audio before the stream connects or after the call ends", "commit": "360993b" },
+        { "description": "`docs/guides/call-audio.md`: guide for audio mode", "commit": "c154356" }
+      ],
+      "documentation": [
+        { "description": "v0.18.0 release notes at `docs/releases/v0.18.0.md`" }
+      ]
+    },
+    {
       "version": "v0.17.0",
       "date": "2026-10-27",
       "highlights": [
