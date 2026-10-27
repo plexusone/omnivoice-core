@@ -324,7 +324,7 @@ This gives you the best of both worlds: premium voice quality from ElevenLabs wi
 
 - Audio codecs: `omnivoice/audio/codec` (mu-law, A-law, PCM)
 - Transport: `omnivoice-twilio/transport` (Media Streams WebSocket)
-- TRD: `omnivoice/docs/twilio-integration-trd.md`
+- TRD: [Twilio Integration TRD](../twilio-integration/TRD.md)
 
 ### ADK Agents
 

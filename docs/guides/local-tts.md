@@ -378,4 +378,4 @@ service LocalSTT {
 - [Voice Cloning Guide](voice-cloning.md) - General voice cloning concepts
 - [Provider Registry](registry.md) - How provider registration works
 - [Whisper MLX Provider README](https://github.com/plexusone/omnivoice-core/tree/main/providers/whisper-mlx) - Local STT provider details
-- [Local Provider TRD](specs/features/local/TRD.md) - Technical design document
+- [Local Provider TRD](../specs/features/local/TRD.md) - Technical design document

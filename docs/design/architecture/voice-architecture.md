@@ -284,5 +284,5 @@ sendToTwilio(mulaw)
 | Deepgram Aura | `github.com/plexusone/omnivoice-core/tts/deepgram` | |
 | Cartesia | `github.com/plexusone/omnivoice-core/tts/cartesia` | |
 | **Infrastructure** | | |
-| Barge-in Detection | `github.com/plexusone/omnivoice-core/bargein` | [Barge-in Guide](bargein.md) |
-| Session Storage | `github.com/plexusone/omnivoice-core/storage` | [Storage Guide](storage.md) |
+| Barge-in Detection | `github.com/plexusone/omnivoice-core/bargein` | [Barge-in Guide](../../guides/bargein.md) |
+| Session Storage | `github.com/plexusone/omnivoice-core/storage` | [Storage Guide](../../guides/storage.md) |

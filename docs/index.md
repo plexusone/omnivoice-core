@@ -175,7 +175,7 @@ mock := providertest.NewMockProviderWithOptions(
 fixture := providertest.GenerateWAVFixture(1000, 22050)
 ```
 
-See the [Testing with Mocks](testing.md) guide for comprehensive documentation.
+See the [Testing with Mocks](guides/testing.md) guide for comprehensive documentation.
 
 ## Transcript Format
 
@@ -200,7 +200,7 @@ for _, seg := range transcript.Segments {
 }
 ```
 
-See the [Transcript Format](transcript.md) guide for full documentation.
+See the [Transcript Format](guides/transcript.md) guide for full documentation.
 
 ## Local TTS/STT Providers
 
@@ -236,7 +236,7 @@ if synth, ok := provider.(tts.ReferenceSynthesizer); ok {
 }
 ```
 
-See the [Local TTS Providers](local-tts.md) guide for setup and usage.
+See the [Local TTS Providers](guides/local-tts.md) guide for setup and usage.
 
 ## CLI Tool (omnictl)
 

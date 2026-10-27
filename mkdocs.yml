@@ -45,23 +45,29 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Design:
-      - Voice Integration PRD: voice-integration-prd.md
-      - Twilio Integration TRD: twilio-integration-trd.md
-      - Provider Conformance Testing: provider-conformance-testing.md
   - Guides:
-      - Voice Architecture: voice-architecture.md
-      - Local TTS/STT Providers: local-tts.md
-      - Terminology (Pronunciation & Case): terminology.md
-      - Transcript Format: transcript.md
-      - Testing with Mocks: testing.md
-      - Observability: observability.md
-      - Provider Registry: registry.md
-      - Voice Cloning: voice-cloning.md
-      - Session Storage: storage.md
-      - Barge-in Detection: bargein.md
-      - Realtime Voice-to-Voice: realtime.md
-  - Roadmap: roadmap.md
+      - Local TTS/STT Providers: guides/local-tts.md
+      - Terminology (Pronunciation & Case): guides/terminology.md
+      - Transcript Format: guides/transcript.md
+      - Testing with Mocks: guides/testing.md
+      - Observability: guides/observability.md
+      - Provider Registry: guides/registry.md
+      - Voice Cloning: guides/voice-cloning.md
+      - Session Storage: guides/storage.md
+      - Barge-in Detection: guides/bargein.md
+      - Realtime Voice-to-Voice: guides/realtime.md
+  - Design:
+      - Architecture:
+          - Voice Architecture: design/architecture/voice-architecture.md
+  - Specs:
+      - Roadmap: specs/ROADMAP.md
+      - Voice Integration PRD: specs/voice-integration/PRD.md
+      - Twilio Integration TRD: specs/twilio-integration/TRD.md
+      - Provider Conformance Testing: specs/provider-conformance/TRD.md
+      - Local Providers:
+          - PRD: specs/features/local/PRD.md
+          - TRD: specs/features/local/TRD.md
+          - Roadmap: specs/features/local/ROADMAP.md
   - Changelog: changelog.md
   - Releases:
       - v0.16.0: releases/v0.16.0.md

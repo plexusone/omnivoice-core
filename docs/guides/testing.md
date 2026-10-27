@@ -332,5 +332,5 @@ func TestMyMock_Conformance(t *testing.T) {
 
 ## See Also
 
-- [Provider Conformance Testing](provider-conformance-testing.md) - TRD for conformance test design
-- [v0.7.0 Release Notes](releases/v0.7.0.md) - Full list of mock provider features
+- [Provider Conformance Testing](../specs/provider-conformance/TRD.md) - TRD for conformance test design
+- [v0.7.0 Release Notes](../releases/v0.7.0.md) - Full list of mock provider features

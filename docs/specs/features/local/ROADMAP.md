@@ -263,7 +263,7 @@ Go Client                    Python Server
 | TRD | `docs/specs/features/local/TRD.md` | Complete |
 | Roadmap | `docs/specs/features/local/ROADMAP.md` | Complete |
 | API Reference | `docs/local-voice.md` | Pending |
-| Getting Started | `docs/guides/local-tts.md` | Pending |
+| Getting Started | `docs/guides/local-tts.md` | Complete |
 
 ## Open Questions
 

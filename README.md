@@ -126,7 +126,7 @@ omnivoice/
 │
 ├── terminology/            # Shared Pronouncer + CaseCorrector engine
 │                           # (spoken form before TTS; displayed form after STT)
-│                           # See docs/terminology.md
+│                           # See docs/guides/terminology.md
 │
 ├── schema/                 # Embedded JSON Schemas
 │   ├── schema.go           # //go:embed directives
@@ -559,7 +559,7 @@ func TestConformance(t *testing.T) {
 | `SynthesizeStream` | Streams audio chunks |
 | `SynthesizeFromReader` | Handles streaming text input |
 
-See [Provider Conformance Testing TRD](https://plexusone.github.io/omnivoice/provider-conformance-testing/) for detailed design documentation.
+See [Provider Conformance Testing TRD](https://plexusone.github.io/omnivoice-core/specs/provider-conformance/TRD/) for detailed design documentation.
 
 ### Mock Providers for Testing
 
