@@ -7,6 +7,33 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.17.0",
+      "date": "2026-10-27",
+      "highlights": [
+        { "description": "Outbound calls can send keypad tones (DTMF) once answered, for example to join a meeting's phone dial-in line" },
+        { "description": "Voice gateways accept call options on outbound calls through the optional `OptionCaller` interface" }
+      ],
+      "added": [
+        { "description": "`callsystem.WithSendDigits()` call option and `CallOptions.SendDigits`, using dial-string notation with `w` and `W` pauses", "commit": "b8ac4bf" },
+        { "description": "`callsystem.ValidateSendDigits()` for providers to reject invalid keypad digits", "commit": "b8ac4bf" },
+        { "description": "`gateway.OptionCaller` interface for gateways that accept call options on outbound calls", "commit": "0de610f" },
+        { "description": "`gateway.MakeCallWithOptions()` helper returning `ErrCallOptionsUnsupported` instead of dropping options", "commit": "0de610f" },
+        { "description": "`docs/guides/outbound-calls.md`: guide for call options and keypad digits", "commit": "9a0ef8b" }
+      ],
+      "documentation": [
+        { "description": "Move user guides to `docs/guides`, specs to `docs/specs`, and the voice architecture comparison to `docs/design/architecture`", "commit": "2f37928" },
+        { "description": "Link release notes to the changelog page on the documentation site", "commit": "f93133d" },
+        { "description": "v0.17.0 release notes at `docs/releases/v0.17.0.md`" }
+      ],
+      "tests": [
+        { "description": "Unit tests for `WithSendDigits` and `ValidateSendDigits`", "commit": "b8ac4bf" },
+        { "description": "Unit tests for `gateway.MakeCallWithOptions` with and without `OptionCaller`", "commit": "0de610f" }
+      ],
+      "dependencies": [
+        { "description": "Update `google.golang.org/grpc` to v1.85.0 and `golang.org/x` modules", "commit": "4cc289b" }
+      ]
+    },
+    {
       "version": "v0.16.0",
       "date": "2026-07-26",
       "commit": "8d4d79d",
