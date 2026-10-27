@@ -7,6 +7,13 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.18.1",
+      "date": "2026-10-27",
+      "dependencies": [
+        { "description": "Update indirect `golang.org/x/net` from v0.61.0 to v0.62.0", "commit": "9c0a627" }
+      ]
+    },
+    {
       "version": "v0.18.0",
       "date": "2026-10-27",
       "highlights": [
