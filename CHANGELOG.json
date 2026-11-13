@@ -7,6 +7,30 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.19.0",
+      "date": "2026-11-13",
+      "highlights": [
+        { "description": "Pronunciations on synthesis requests: providers say a term from its IPA where the model accepts phonemes, and from its respelling otherwise" }
+      ],
+      "added": [
+        { "description": "`tts.Pronunciation` with `Term`, `IPA` and `Respelling`, and `SynthesisConfig.Pronunciations`", "commit": "3e503c7" },
+        { "description": "`tts.ApplyPronunciations(text, pronunciations, phonemes)`: writes IPA as SSML `<phoneme alphabet=\"ipa\">` elements, or substitutes respellings; whole words in any script, longest terms first, falling back to shorter ones where a longer one isn't a whole word, XML-escaped", "commit": "3e503c7" },
+        { "description": "`terminology.PronunciationsFor(terms, locale)`: a term's IPA and respelling for one locale, for its canonical form and each alias", "commit": "4fc95aa" }
+      ],
+      "dependencies": [
+        { "description": "Require `github.com/plexusone/terminology-spec` v0.2.0, whose `Term.IPA` field `terminology.PronunciationsFor` reads", "commit": "b4464bf" }
+      ],
+      "documentation": [
+        { "description": "Terminology guide: pronunciations on a request", "commit": "364dd58" },
+        { "description": "README package tree lists per-request pronunciations" },
+        { "description": "v0.19.0 release notes at `docs/releases/v0.19.0.md`" }
+      ],
+      "tests": [
+        { "description": "`ApplyPronunciations` for IPA, respellings, overlapping terms, case, non-ASCII terms, word edges and escaping; `PronunciationsFor` with aliases and locales", "commit": "3e503c7" },
+        { "description": "`ApplyPronunciations` falling back to a shorter term where a longer one isn't a whole word, case folding beyond lowercase, and spacing vowel marks", "commit": "549dda8" }
+      ]
+    },
+    {
       "version": "v0.18.1",
       "date": "2026-10-27",
       "dependencies": [

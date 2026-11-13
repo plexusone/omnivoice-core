@@ -62,6 +62,12 @@ type SynthesisConfig struct {
 	// Use provider-specific helper functions for type-safe access.
 	Extensions map[string]any
 
+	// Pronunciations tell the provider how to say particular terms, such as
+	// foreign names. A provider uses a term's IPA where the voice or model
+	// accepts phonemes, and its Respelling otherwise; see
+	// ApplyPronunciations. Providers that support neither ignore them.
+	Pronunciations []Pronunciation
+
 	// Hook provides observability for TTS operations.
 	// If nil, no hooks are called.
 	Hook observability.TTSHook

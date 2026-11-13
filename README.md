@@ -109,6 +109,7 @@ Audio In → [OpenAI Realtime / Gemini Live] → Audio Out
 omnivoice/
 ├── tts/                    # Text-to-Speech
 │   ├── tts.go              # Interface definitions
+│   ├── pronunciation.go    # Per-request pronunciations: IPA or respelling
 │   ├── elevenlabs/         # ElevenLabs provider
 │   ├── polly/              # AWS Polly provider
 │   ├── google/             # Google Cloud TTS
@@ -126,6 +127,7 @@ omnivoice/
 │
 ├── terminology/            # Shared Pronouncer + CaseCorrector engine
 │                           # (spoken form before TTS; displayed form after STT)
+│                           # PronunciationsFor: terms → request pronunciations
 │                           # See docs/guides/terminology.md
 │
 ├── schema/                 # Embedded JSON Schemas
