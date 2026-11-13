@@ -17,6 +17,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/plexusone/omnivoice-core/tts"
 	"github.com/plexusone/terminology-spec/pkg/terminology"
 )
 
@@ -93,6 +94,26 @@ func termKeys(t terminology.Term) []string {
 func compilePattern(key string) (*regexp.Regexp, bool) {
 	pattern, err := regexp.Compile(`(?i)\b` + regexp.QuoteMeta(key) + `\b`)
 	return pattern, err == nil
+}
+
+// PronunciationsFor projects terms into the pronunciations a TTS request
+// carries for one BCP-47 locale (tts.SynthesisConfig.Pronunciations): the
+// term's IPA and respelling for that locale, for its CanonicalForm and
+// each Alias. Terms with neither for the locale are left out.
+func PronunciationsFor(terms []terminology.Term, locale string) []tts.Pronunciation {
+	var ps []tts.Pronunciation
+	for _, t := range terms {
+		ipa, respelling := t.IPA[locale], t.Pronunciations[locale]
+		if ipa == "" && respelling == "" {
+			continue
+		}
+		for _, key := range termKeys(t) {
+			if key != "" {
+				ps = append(ps, tts.Pronunciation{Term: key, IPA: ipa, Respelling: respelling})
+			}
+		}
+	}
+	return ps
 }
 
 // Pronouncer applies per-locale TTS pronunciation substitutions from

@@ -72,3 +72,15 @@ func TestMerge_ReExport(t *testing.T) {
 		t.Errorf("Merge() = %+v, want single term with CanonicalForm X2", merged)
 	}
 }
+
+func TestPronunciationsFor(t *testing.T) {
+	terms := []Term{
+		{CanonicalForm: "Lamborghini", Aliases: []string{"Lambo"}, IPA: map[string]string{"en-US": "lamborˈɡiːni"}, Pronunciations: map[string]string{"en-US": "lambor gheeny"}},
+		{CanonicalForm: "AAuth", Pronunciations: map[string]string{"fr-FR": "a auth"}},
+	}
+	got := PronunciationsFor(terms, "en-US")
+	if len(got) != 2 || got[0].Term != "Lamborghini" || got[1].Term != "Lambo" ||
+		got[1].IPA != "lamborˈɡiːni" || got[1].Respelling != "lambor gheeny" {
+		t.Errorf("PronunciationsFor = %+v", got)
+	}
+}
