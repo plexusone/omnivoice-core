@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	github.com/grokify/mogo v0.75.0
-	github.com/plexusone/terminology-spec v0.1.0
+	github.com/plexusone/terminology-spec v0.2.0
 	github.com/redis/go-redis/v9 v9.23.0
 	github.com/spf13/cobra v1.10.2
 	google.golang.org/grpc v1.85.0

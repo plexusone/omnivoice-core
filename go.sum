@@ -15,8 +15,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/klauspost/cpuid/v2 v2.4.0 h1:S6Hrbc7+ywsr0r+RLapfGBHfyefhCTwEh3A0tV913Dw=
 github.com/klauspost/cpuid/v2 v2.4.0/go.mod h1:19jmZ9mjzoF//ddRSUsv0zfBTJWh3QJh9FNxZTMrGxU=
-github.com/plexusone/terminology-spec v0.1.0 h1:xl6o7m1elOfHsVQuLZLYHgyPH5PrOjOFNPQMG5nywFM=
-github.com/plexusone/terminology-spec v0.1.0/go.mod h1:lQPaX3JdGYc04GZzJu9y1nK8L3gUbYUaVIfetG4TNMI=
+github.com/plexusone/terminology-spec v0.2.0 h1:RXHjrJ5AzkotsC3MTss8PhpE+Su9Mab4Yj6RVsxx2og=
+github.com/plexusone/terminology-spec v0.2.0/go.mod h1:/DWB5bWgpgdgIw6Jn4zinjClwwiNUDLMVv1zKYjuaVg=
 github.com/redis/go-redis/v9 v9.23.0 h1:/TTVdJa8BRNsybwwGGnmiYktHNlUXtbOQxlWpHBPL3s=
 github.com/redis/go-redis/v9 v9.23.0/go.mod h1:EWP2UUk+XDaI1s5nQB5mablZN6vccXlmBQTyfnF87D0=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
