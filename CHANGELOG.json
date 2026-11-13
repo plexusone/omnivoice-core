@@ -14,7 +14,7 @@
       ],
       "added": [
         { "description": "`tts.Pronunciation` with `Term`, `IPA` and `Respelling`, and `SynthesisConfig.Pronunciations`", "commit": "3e503c7" },
-        { "description": "`tts.ApplyPronunciations(text, pronunciations, phonemes)`: writes IPA as SSML `<phoneme alphabet=\"ipa\">` elements, or substitutes respellings; whole words in any script, longest terms first, XML-escaped", "commit": "3e503c7" },
+        { "description": "`tts.ApplyPronunciations(text, pronunciations, phonemes)`: writes IPA as SSML `<phoneme alphabet=\"ipa\">` elements, or substitutes respellings; whole words in any script, longest terms first, falling back to shorter ones where a longer one isn't a whole word, XML-escaped", "commit": "3e503c7" },
         { "description": "`terminology.PronunciationsFor(terms, locale)`: a term's IPA and respelling for one locale, for its canonical form and each alias", "commit": "4fc95aa" }
       ],
       "dependencies": [
@@ -26,7 +26,8 @@
         { "description": "v0.19.0 release notes at `docs/releases/v0.19.0.md`" }
       ],
       "tests": [
-        { "description": "`ApplyPronunciations` for IPA, respellings, overlapping terms, case, non-ASCII terms, word edges and escaping; `PronunciationsFor` with aliases and locales", "commit": "3e503c7" }
+        { "description": "`ApplyPronunciations` for IPA, respellings, overlapping terms, case, non-ASCII terms, word edges and escaping; `PronunciationsFor` with aliases and locales", "commit": "3e503c7" },
+        { "description": "`ApplyPronunciations` falling back to a shorter term where a longer one isn't a whole word, case folding beyond lowercase, and spacing vowel marks", "commit": "549dda8" }
       ]
     },
     {
