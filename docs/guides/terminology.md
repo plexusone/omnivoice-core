@@ -53,12 +53,32 @@ fixed := c.Apply("sign in with aauth")           // -> "sign in with AAuth"
 `Term` is re-exported from `terminology-spec`, so consumers don't need a second
 direct import just to name the type.
 
+## Pronunciations on a request
+
+A term can carry IPA per locale (`ipa`) as well as a respelling
+(`pronunciations`). Rather than rewriting text yourself, pass both to the
+provider and let it choose:
+
+```go
+cfg := tts.SynthesisConfig{
+    VoiceID:        voiceID,
+    Pronunciations: terminology.PronunciationsFor(all, "en-US"),
+}
+```
+
+A provider calls `tts.ApplyPronunciations(text, cfg.Pronunciations, phonemes)`,
+with `phonemes` true when the voice or model accepts SSML phoneme tags. Terms
+with IPA then become `<phoneme alphabet="ipa" ph="…">` elements; otherwise the
+respelling replaces the term. Terms with neither are spoken as written.
+
 ## Matching semantics
 
 - Case-insensitive with word boundaries.
 - Multi-word terms are matched before shorter overlapping ones, so a longer term
   isn't shadowed by a shorter one nested inside it.
 - Terms with no entry for the requested locale are left unchanged.
+- `ApplyPronunciations` treats letters and digits in any script as part of a
+  word, so terms such as "Murciélago" match only as whole words.
 
 ## See also
 
