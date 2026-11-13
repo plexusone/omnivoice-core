@@ -34,38 +34,79 @@ type Pronunciation struct {
 // never matched again. Only the inserted element is XML-escaped; the rest
 // of the text is passed through as it is.
 func ApplyPronunciations(text string, ps []Pronunciation, phonemes bool) string {
-	byTerm := map[string]Pronunciation{}
-	var terms []string
+	byTerm := map[string]int{}
+	var entries []Pronunciation
 	for _, p := range ps {
-		key := strings.ToLower(strings.TrimSpace(p.Term))
+		p.Term = strings.TrimSpace(p.Term)
+		key := strings.ToLower(p.Term)
 		if key == "" || (p.IPA == "" && p.Respelling == "") || (!phonemes && p.Respelling == "") {
 			continue
 		}
-		if _, ok := byTerm[key]; !ok {
-			terms = append(terms, key)
-		}
-		byTerm[key] = p
-	}
-	if len(terms) == 0 {
-		return text
-	}
-	sort.SliceStable(terms, func(i, j int) bool { return len(terms[i]) > len(terms[j]) })
-	quoted := make([]string, len(terms))
-	for i, t := range terms {
-		quoted[i] = regexp.QuoteMeta(t)
-	}
-	// Alternatives are tried in order, so the longest term matches first.
-	re := regexp.MustCompile(`(?i)` + strings.Join(quoted, "|"))
-
-	var b strings.Builder
-	last := 0
-	for _, m := range re.FindAllStringIndex(text, -1) {
-		start, end := m[0], m[1]
-		if !wordEdge(text, start, end) {
+		if i, ok := byTerm[key]; ok {
+			entries[i] = p
 			continue
 		}
-		written := text[start:end]
-		p := byTerm[strings.ToLower(written)]
+		byTerm[key] = len(entries)
+		entries = append(entries, p)
+	}
+	if len(entries) == 0 {
+		return text
+	}
+	sort.SliceStable(entries, func(i, j int) bool { return len(entries[i].Term) > len(entries[j].Term) })
+
+	// One group per term, longest first: alternatives are tried in order,
+	// and the group that matched names the term, so case folding never has
+	// to be repeated to find it.
+	groups := make([]string, len(entries))
+	for i, e := range entries {
+		groups[i] = "(" + regexp.QuoteMeta(e.Term) + ")"
+	}
+	re := regexp.MustCompile(`(?i)` + strings.Join(groups, "|"))
+	// anchored[i] matches entries[i] at the start of a string, for trying
+	// shorter terms where a longer one isn't a whole word.
+	anchored := make([]*regexp.Regexp, len(entries))
+	anchoredAt := func(i int) *regexp.Regexp {
+		if anchored[i] == nil {
+			anchored[i] = regexp.MustCompile(`(?i)\A(?:` + regexp.QuoteMeta(entries[i].Term) + `)`)
+		}
+		return anchored[i]
+	}
+
+	var b strings.Builder
+	last, pos := 0, 0
+	for pos < len(text) {
+		m := re.FindStringSubmatchIndex(text[pos:])
+		if m == nil {
+			break
+		}
+		start := pos + m[0]
+		matched, end := -1, 0
+		if startEdge(text, start) {
+			for i := range entries {
+				if m[2+2*i] >= 0 {
+					matched, end = i, pos+m[1]
+					break
+				}
+			}
+			// The longest term here isn't a whole word, as "New York" in
+			// "New Yorkshire"; try the shorter ones, as "New".
+			for !endEdge(text, end) && matched >= 0 {
+				next := -1
+				for i := matched + 1; i < len(entries); i++ {
+					if loc := anchoredAt(i).FindStringIndex(text[start:]); loc != nil {
+						next, end = i, start+loc[1]
+						break
+					}
+				}
+				matched = next
+			}
+		}
+		if matched < 0 {
+			_, size := utf8.DecodeRuneInString(text[start:])
+			pos = start + size
+			continue
+		}
+		p, written := entries[matched], text[start:end]
 		b.WriteString(text[last:start])
 		if phonemes && p.IPA != "" {
 			b.WriteString(`<phoneme alphabet="ipa" ph="`)
@@ -76,32 +117,33 @@ func ApplyPronunciations(text string, ps []Pronunciation, phonemes bool) string 
 		} else {
 			b.WriteString(p.Respelling)
 		}
-		last = end
+		last, pos = end, end
 	}
 	b.WriteString(text[last:])
 	return b.String()
 }
 
-// wordEdge reports whether text[start:end] isn't joined to a letter or
-// digit on either side, in any script.
-func wordEdge(text string, start, end int) bool {
-	if start > 0 {
-		r, _ := utf8.DecodeLastRuneInString(text[:start])
-		if isWordRune(r) {
-			return false
-		}
+// startEdge reports whether text[start:] doesn't begin inside a word: no
+// letter, digit or mark, in any script, comes before it.
+func startEdge(text string, start int) bool {
+	if start == 0 {
+		return true
 	}
-	if end < len(text) {
-		r, _ := utf8.DecodeRuneInString(text[end:])
-		if isWordRune(r) {
-			return false
-		}
+	r, _ := utf8.DecodeLastRuneInString(text[:start])
+	return !isWordRune(r)
+}
+
+// endEdge reports whether text[:end] doesn't end inside a word.
+func endEdge(text string, end int) bool {
+	if end >= len(text) {
+		return true
 	}
-	return true
+	r, _ := utf8.DecodeRuneInString(text[end:])
+	return !isWordRune(r)
 }
 
 func isWordRune(r rune) bool {
-	return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) || unicode.Is(unicode.Mn, r)
+	return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) || unicode.IsMark(r)
 }
 
 var xmlEscaper = strings.NewReplacer(`&`, "&amp;", `<`, "&lt;", `>`, "&gt;", `"`, "&quot;", `'`, "&apos;")

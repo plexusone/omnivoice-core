@@ -46,3 +46,46 @@ func TestApplyPronunciationsNone(t *testing.T) {
 		t.Errorf("got %q", got)
 	}
 }
+
+func TestApplyPronunciationsWordEdges(t *testing.T) {
+	cases := []struct {
+		name, text, want string
+		ps               []Pronunciation
+	}{
+		{
+			"shorter term where the longest isn't a whole word",
+			"New Yorkshire and New York",
+			"Noo Yorkshire and NY",
+			[]Pronunciation{{Term: "New York", Respelling: "NY"}, {Term: "New", Respelling: "Noo"}},
+		},
+		{
+			"no shorter term fits",
+			"New Yorkshire",
+			"New Yorkshire",
+			[]Pronunciation{{Term: "New York", Respelling: "NY"}},
+		},
+		{
+			"case folding beyond lowercase",
+			"ΝΊΚΟΣ and Νίκος",
+			"Nikos and Nikos",
+			[]Pronunciation{{Term: "Νίκος", Respelling: "Nikos"}},
+		},
+		{
+			"spacing vowel mark continues a word",
+			"रामा and राम",
+			"रामा and raam",
+			[]Pronunciation{{Term: "राम", Respelling: "raam"}},
+		},
+		{
+			"term ending in a vowel mark",
+			"रामा said",
+			"raamaa said",
+			[]Pronunciation{{Term: "राम", Respelling: "raam"}, {Term: "रामा", Respelling: "raamaa"}},
+		},
+	}
+	for _, tc := range cases {
+		if got := ApplyPronunciations(tc.text, tc.ps, false); got != tc.want {
+			t.Errorf("%s:\n got %q\nwant %q", tc.name, got, tc.want)
+		}
+	}
+}
