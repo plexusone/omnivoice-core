@@ -59,7 +59,10 @@ func TranscribeAll(ctx context.Context, engines []Engine, wav []byte, keywords [
 			if cfg.Channels == 0 {
 				cfg.Channels = 1
 			}
-			if !e.NoKeywords && len(keywords) > 0 {
+			switch {
+			case e.NoKeywords:
+				cfg.Keywords = nil // configured key words would defeat the independent hearing
+			case len(keywords) > 0:
 				cfg.Keywords = append(append([]string(nil), cfg.Keywords...), keywords...)
 			}
 			h := Hearing{Engine: e.Name, Model: cfg.Model}
