@@ -18,6 +18,9 @@
         { "description": "`stt/verify`: `TranscribeAll` runs several engines on one clip and refuses key words on every engine; `Verifier.VerifyQuotes` locates, clips, compares and widens a clip when edge words are unheard, returning a `Report`; `Search` looks for phrases across independent transcripts", "commit": "755b751" },
         { "description": "`schema.VerifyReportV1Schema`: the verify report's JSON Schema, generated from its Go types by `go run schema/gen/main.go`", "commit": "d768ec3" }
       ],
+      "build": [
+        { "description": "Schema files are checked out with LF line endings on every platform, so embedded schemas are identical", "commit": "56d0549" }
+      ],
       "dependencies": [
         { "description": "Require `github.com/invopop/jsonschema` v0.14.0 to generate the verify report schema", "commit": "d768ec3" },
         { "description": "Update module dependencies", "commit": "622de78" }
@@ -30,7 +33,8 @@
         { "description": "Normalization, alignment, location and every decision rule, with stutters, elisions, split words, aliases, edge words outside a clip and hearings in any order", "commit": "ee7f980" },
         { "description": "Clips cut from generated audio, with header sizes checked", "commit": "3a132d7" },
         { "description": "Verifier with fake engines: key word rule, failed engines, clip widening, reports and absence search", "commit": "755b751" },
-        { "description": "The committed verify report schema matches the Go types", "commit": "d768ec3" }
+        { "description": "The committed verify report schema matches the Go types", "commit": "d768ec3" },
+        { "description": "The schema check compares content, so it passes on checkouts with CRLF line endings", "commit": "56d0549" }
       ]
     },
     {
