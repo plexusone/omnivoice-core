@@ -99,7 +99,7 @@ type QuoteResult struct {
 // VerifyQuote locates the quote (when it has no times), clips it, has every
 // engine transcribe the clip, and compares what they heard with the quote.
 func (v Verifier) VerifyQuote(ctx context.Context, audioPath string, index []TimedWord, q Quote) QuoteResult {
-	r := QuoteResult{Quote: q, Comparison: Comparison{Expected: q.Text}}
+	r := QuoteResult{Quote: q, Comparison: Comparison{Expected: q.Text, Engines: []EngineResult{}}}
 	start, end := q.Start.Duration(), q.End.Duration()
 	if start == 0 && end == 0 {
 		span, ok := Locate(index, q.Text, v.Options.Compare.Normalize)

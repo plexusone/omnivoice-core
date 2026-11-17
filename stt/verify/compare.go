@@ -1,6 +1,7 @@
 package verify
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 )
@@ -126,7 +127,7 @@ func Compare(expected string, hearings []Hearing, opts CompareOptions) Compariso
 		minEngines = 3
 	}
 	exp := Normalize(expected, opts.Normalize)
-	c := Comparison{Expected: expected}
+	c := Comparison{Expected: expected, Engines: []EngineResult{}}
 
 	type row struct {
 		engine string
@@ -138,6 +139,15 @@ func Compare(expected string, hearings []Hearing, opts CompareOptions) Compariso
 	var rows []row
 	hs := append([]Hearing(nil), hearings...)
 	sort.SliceStable(hs, func(i, j int) bool { return hs[i].Engine < hs[j].Engine })
+	// Each hearing is one vote, keyed by engine name: number repeated names
+	// ("openai", "openai#2") so none overwrites another.
+	seen := map[string]int{}
+	for i := range hs {
+		seen[hs[i].Engine]++
+		if n := seen[hs[i].Engine]; n > 1 {
+			hs[i].Engine = fmt.Sprintf("%s#%d", hs[i].Engine, n)
+		}
+	}
 	for _, h := range hs {
 		er := EngineResult{Engine: h.Engine, Model: h.Model, Text: h.Text, Err: h.Err}
 		if h.Err != "" {
@@ -236,7 +246,7 @@ func Compare(expected string, hearings []Hearing, opts CompareOptions) Compariso
 			if v, ok := majority(values, n); ok {
 				d.Resolved = ptr(v)
 			} else {
-				d.Resolved = ptr(expectedVal) // no majority on a function word
+				disputed = true // no majority, even on a function word
 			}
 		default:
 			disputed = true
@@ -319,20 +329,39 @@ func Compare(expected string, hearings []Hearing, opts CompareOptions) Compariso
 // form, replaced and inserted words take the engines' normalized form.
 func rebuild(exp []Token, repl []*string, ins []string, diffs []Difference) (string, bool) {
 	var out []string
-	lastWord := -1
-	for i, t := range exp {
+	for i := 0; i < len(exp); {
+		// The tokens of one written word ("don't" is "do" and "not").
+		j := i + 1
+		for j < len(exp) && exp[j].Word == exp[i].Word {
+			j++
+		}
+		changed := false
+		for k := i; k < j; k++ {
+			if repl[k] != nil || (k > i && ins[k] != "") {
+				changed = true
+			}
+		}
 		if ins[i] != "" {
 			out = append(out, ins[i])
 		}
-		switch {
-		case repl[i] != nil:
-			if *repl[i] != "" {
-				out = append(out, *repl[i])
-			}
-		case t.Word != lastWord:
-			out = append(out, t.Orig)
+		if !changed {
+			out = append(out, exp[i].Orig)
+			i = j
+			continue
 		}
-		lastWord = t.Word
+		// Part of the word changed: write its tokens as resolved.
+		for k := i; k < j; k++ {
+			if k > i && ins[k] != "" {
+				out = append(out, ins[k])
+			}
+			switch {
+			case repl[k] == nil:
+				out = append(out, exp[k].Text)
+			case *repl[k] != "":
+				out = append(out, *repl[k])
+			}
+		}
+		i = j
 	}
 	if ins[len(exp)] != "" {
 		out = append(out, ins[len(exp)])
