@@ -55,13 +55,16 @@ func Locate(words []TimedWord, quote string, opts NormalizeOptions) (Span, bool)
 	if len(q) == 0 || len(words) == 0 {
 		return Span{}, false
 	}
-	var hyp []Token
+	// Normalize the words together, so a number said across words
+	// ("twenty" "five") is one token, while each token keeps its words.
+	var raw []rawWord
 	for wi, w := range words {
-		for _, t := range Normalize(w.Text, opts) {
-			t.Word = wi
-			hyp = append(hyp, t)
+		for _, rw := range splitWords(w.Text) {
+			rw.src = wi
+			raw = append(raw, rw)
 		}
 	}
+	hyp := normalizeWords(raw, opts)
 	pairs, dist := AlignWithin(q, hyp)
 	first, last := -1, -1
 	for _, p := range pairs {
@@ -71,7 +74,7 @@ func Locate(words []TimedWord, quote string, opts NormalizeOptions) (Span, bool)
 		if first < 0 {
 			first = hyp[p.Hyp].Word
 		}
-		last = hyp[p.Hyp].Word
+		last = hyp[p.Hyp].end
 	}
 	if first < 0 {
 		return Span{}, false

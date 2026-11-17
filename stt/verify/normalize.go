@@ -44,6 +44,9 @@ type Token struct {
 
 	// brk marks punctuation after the token, which ends a number phrase.
 	brk bool
+	// end is the index of the last original word the token came from; it
+	// differs from Word only for a number phrase spanning several words.
+	end int
 }
 
 // Substantive reports whether a difference in the token changes meaning.
@@ -67,8 +70,17 @@ type NormalizeOptions struct {
 // "10x" into "10" and "x", and drops fillers. Each token is given a Kind.
 func Normalize(text string, opts NormalizeOptions) []Token {
 	words := splitWords(text)
+	for i := range words {
+		words[i].src = i
+	}
+	return normalizeWords(words, opts)
+}
+
+// normalizeWords normalizes split words. A token's Word is its word's src,
+// so words split from separate strings can keep their own indexes.
+func normalizeWords(words []rawWord, opts NormalizeOptions) []Token {
 	var toks []Token
-	for wi, w := range words {
+	for _, w := range words {
 		parts := expandWord(w.clean)
 		for _, p := range parts {
 			if p == "" {
@@ -77,7 +89,7 @@ func Normalize(text string, opts NormalizeOptions) []Token {
 			if !opts.KeepFillers && fillers[p] {
 				continue
 			}
-			toks = append(toks, Token{Text: p, Orig: w.orig, Word: wi})
+			toks = append(toks, Token{Text: p, Orig: w.orig, Word: w.src, end: w.src})
 		}
 		if w.elision && len(toks) > 0 {
 			toks[len(toks)-1].GapAfter = true
@@ -92,6 +104,7 @@ func Normalize(text string, opts NormalizeOptions) []Token {
 }
 
 type rawWord struct {
+	src           int
 	orig          string
 	clean         string
 	sentenceStart bool
@@ -134,22 +147,36 @@ func splitWords(text string) []rawWord {
 	return out
 }
 
-// splitHyphens splits "well-known" but keeps "-5" and "covid-19"-style digits
-// together with their prefix only when the hyphen joins letters.
+// splitHyphens splits "well-known" into words, keeping a leading minus sign
+// on a number ("-5").
 func splitHyphens(s string) []string {
 	if !strings.Contains(s, "-") {
 		return []string{s}
 	}
-	return strings.FieldsFunc(s, func(r rune) bool { return r == '-' })
+	neg := negativeNumber(s)
+	parts := strings.FieldsFunc(s, func(r rune) bool { return r == '-' })
+	if neg && len(parts) > 0 {
+		parts[0] = "-" + parts[0]
+	}
+	return parts
+}
+
+// negativeNumber reports whether s starts with a minus sign and a digit.
+func negativeNumber(s string) bool {
+	return len(s) > 1 && s[0] == '-' && s[1] >= '0' && s[1] <= '9'
 }
 
 // cleanWord lower-cases a word and strips surrounding punctuation, keeping
 // apostrophes, decimal points and percent signs that belong to it.
 func cleanWord(s string) string {
 	s = strings.ToLower(s)
+	neg := negativeNumber(strings.TrimLeft(s, `"'([`))
 	s = strings.TrimFunc(s, func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '%'
 	})
+	if neg {
+		s = "-" + s
+	}
 	var b strings.Builder
 	rs := []rune(s)
 	for i, r := range rs {
@@ -158,6 +185,8 @@ func cleanWord(s string) string {
 			b.WriteRune(r)
 		case r == '\'':
 			b.WriteRune(r)
+		case r == '-' && i == 0:
+			b.WriteRune(r) // a minus sign kept above
 		case (r == '.' || r == ',') && i > 0 && i < len(rs)-1 && unicode.IsDigit(rs[i-1]) && unicode.IsDigit(rs[i+1]):
 			if r == '.' {
 				b.WriteRune(r)
@@ -257,8 +286,20 @@ func joinNumbers(toks []Token) []Token {
 		}
 		t := toks[i]
 		t.Text = strconv.Itoa(val)
+		t.Kind = KindNumber
 		t.GapAfter = toks[j-1].GapAfter
 		t.brk = toks[j-1].brk
+		t.end = toks[j-1].end
+		// Keep the whole phrase as written ("twenty five"), one copy per word.
+		var orig []string
+		last := -1
+		for _, pt := range toks[i:j] {
+			if pt.Word != last {
+				orig = append(orig, pt.Orig)
+				last = pt.Word
+			}
+		}
+		t.Orig = strings.Join(orig, " ")
 		out = append(out, t)
 		i = j
 	}
@@ -298,8 +339,9 @@ func parseNumber(toks []Token, i int) (int, int, bool) {
 			}
 			total += current * scales[w]
 			current = 0
-		case w == "and" && j > i && j+1 < len(toks) && isNumberWord(toks[j+1].Text) && !toks[j-1].brk:
-			// "one hundred and five"
+		case w == "and" && j > i && scales[toks[j-1].Text] > 0 && j+1 < len(toks) &&
+			(units[toks[j+1].Text] > 0 || tens[toks[j+1].Text] > 0) && !toks[j-1].brk:
+			// "one hundred and five"; "two and three" stays two numbers
 		default:
 			return j, total + current, true
 		}
