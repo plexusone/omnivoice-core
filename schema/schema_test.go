@@ -2,6 +2,7 @@ package schema
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -64,7 +65,9 @@ func TestVerifyReportV1SchemaUpToDate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(want) != VerifyReportV1Schema {
+	// A checkout may convert line endings; compare the content.
+	got := strings.ReplaceAll(VerifyReportV1Schema, "\r\n", "\n")
+	if string(want) != got {
 		t.Fatal("verify-report-v1.schema.json is out of date; run go run schema/gen/main.go")
 	}
 }
