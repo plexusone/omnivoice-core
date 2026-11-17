@@ -119,6 +119,7 @@ omnivoice/
 ├── stt/                    # Speech-to-Text
 │   ├── stt.go              # Interface definitions
 │   ├── transcript.go       # Canonical Transcript format
+│   ├── verify/             # Check wording against audio with several engines
 │   ├── whisper/            # OpenAI Whisper
 │   ├── deepgram/           # Deepgram provider
 │   ├── google/             # Google Speech-to-Text
@@ -132,7 +133,8 @@ omnivoice/
 │
 ├── schema/                 # Embedded JSON Schemas
 │   ├── schema.go           # //go:embed directives
-│   └── transcript-v1.schema.json  # Transcript format schema
+│   ├── transcript-v1.schema.json  # Transcript format schema
+│   └── verify-report-v1.schema.json  # Verify report schema, generated from Go types
 │
 ├── agent/                  # Voice Agent orchestration
 │   ├── agent.go            # Interface definitions
@@ -190,7 +192,8 @@ omnivoice/
 │   │   └── format.go       # Encoding type with normalization, provider format constants
 │   ├── converter/          # Audio format conversion
 │   │   └── converter.go    # TwilioToOpenAI, OpenAIToTwilio, etc.
-│   └── codec/              # Audio codecs (mulaw, alaw, PCM)
+│   ├── codec/              # Audio codecs (mulaw, alaw, PCM)
+│   └── clip/               # Cut a stretch of a recording as 16 kHz mono WAV (ffmpeg)
 │
 ├── gateway/                # Voice gateway integration
 │   ├── gateway.go          # Gateway, Session, Config interfaces
