@@ -201,7 +201,9 @@ func align(ref, hyp []Token, freeEnds bool) ([]Pair, int) {
 			rev = append(rev, Pair{Ref: -1, Hyp: j - 1, Op: OpInsert})
 			v := t[stI][i][j]
 			j--
-			st = prevState(t, i, j, v, [3]int{insCost(i, false), insCost(i, true), insCost(i, false)})
+			// Step costs by state: from a match or a deletion an insertion
+			// opens a run; from an insertion it extends one.
+			st = prevState(t, i, j, v, [3]int{insCost(i, false), insCost(i, false), insCost(i, true)})
 		}
 	}
 	out := make([]Pair, len(rev))
