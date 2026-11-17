@@ -7,6 +7,38 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.20.0",
+      "date": "2026-11-17",
+      "highlights": [
+        { "description": "Verify wording against audio: several speech-to-text engines hear a clip of the recording, and fixed rules decide whether a quotation was agreed, needs correcting or is disputed" }
+      ],
+      "added": [
+        { "description": "`stt/verify`: `Normalize` turns text into comparable tokens with kinds (number, negation, term, name, function, content); `Align` and `AlignWithin` align tokens with an affine-gap alignment suited to quotations; `Locate` finds wording in a timed transcript; `Compare` decides `agreed`, `corrected`, `disputed`, `notFound` or `insufficient`", "commit": "ee7f980" },
+        { "description": "`audio/clip`: `Clip` cuts a stretch of a recording as 16 kHz mono WAV with ffmpeg, writing the WAV header's real sizes", "commit": "3a132d7" },
+        { "description": "`stt/verify`: `TranscribeAll` runs several engines on one clip and refuses key words on every engine; `Verifier.VerifyQuotes` locates, clips, compares and widens a clip when edge words are unheard, returning a `Report`; `Search` looks for phrases across independent transcripts", "commit": "755b751" },
+        { "description": "`schema.VerifyReportV1Schema`: the verify report's JSON Schema, generated from its Go types by `go run schema/gen/main.go`", "commit": "d768ec3" }
+      ],
+      "build": [
+        { "description": "Schema files are checked out with LF line endings on every platform, so embedded schemas are identical", "commit": "56d0549" }
+      ],
+      "dependencies": [
+        { "description": "Require `github.com/invopop/jsonschema` v0.14.0 to generate the verify report schema", "commit": "d768ec3" },
+        { "description": "Update module dependencies", "commit": "622de78" }
+      ],
+      "documentation": [
+        { "description": "Verifying Wording Against Audio guide at `docs/guides/verify.md`; README package tree lists `stt/verify`, `audio/clip` and the verify report schema", "commit": "46d701f" },
+        { "description": "v0.20.0 release notes at `docs/releases/v0.20.0.md`" }
+      ],
+      "tests": [
+        { "description": "Normalization, alignment, location and every decision rule, with stutters, elisions, split words, aliases, edge words outside a clip and hearings in any order", "commit": "ee7f980" },
+        { "description": "Clips cut from generated audio, with header sizes checked", "commit": "3a132d7" },
+        { "description": "Verifier with fake engines: key word rule, failed engines, clip widening, reports and absence search", "commit": "755b751" },
+        { "description": "The committed verify report schema matches the Go types", "commit": "d768ec3" },
+        { "description": "The schema check compares content, so it passes on checkouts with CRLF line endings", "commit": "56d0549" },
+        { "description": "Edge cases: insertion runs when retracing an alignment, numbers across words, signs and conjunctions, repeated engine names, function words with no majority, corrections inside contractions, and configured key words on a plain engine", "commit": "6f4ddc6" }
+      ]
+    },
+    {
       "version": "v0.19.0",
       "date": "2026-11-13",
       "highlights": [

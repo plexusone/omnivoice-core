@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://omnivoice.dev/schema/verify-report-v1.json",
+  "$ref": "#/$defs/Report",
+  "$defs": {
+    "AudioInfo": {
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ]
+    },
+    "Comparison": {
+      "properties": {
+        "decision": {
+          "type": "string"
+        },
+        "expected": {
+          "type": "string"
+        },
+        "corrected": {
+          "type": "string"
+        },
+        "corrected_substantive": {
+          "type": "boolean"
+        },
+        "missing_start": {
+          "type": "integer"
+        },
+        "missing_end": {
+          "type": "integer"
+        },
+        "engines": {
+          "items": {
+            "$ref": "#/$defs/EngineResult"
+          },
+          "type": "array"
+        },
+        "differences": {
+          "items": {
+            "$ref": "#/$defs/Difference"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "decision",
+        "expected",
+        "engines"
+      ]
+    },
+    "Difference": {
+      "properties": {
+        "position": {
+          "type": "integer"
+        },
+        "expected": {
+          "type": "string"
+        },
+        "insertion": {
+          "type": "boolean"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "substantive": {
+          "type": "boolean"
+        },
+        "heard": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "resolved": {
+          "type": "string"
+        },
+        "edge": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "position",
+        "expected",
+        "kind",
+        "substantive",
+        "heard"
+      ]
+    },
+    "EngineInfo": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "keywords"
+      ]
+    },
+    "EngineResult": {
+      "properties": {
+        "engine": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "distance": {
+          "type": "integer"
+        },
+        "matches": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "engine",
+        "text",
+        "distance",
+        "matches"
+      ]
+    },
+    "Options": {
+      "properties": {
+        "pad_ms": {
+          "type": "integer"
+        },
+        "min_locate_score": {
+          "type": "number"
+        },
+        "keywords": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "pad_ms",
+        "min_locate_score"
+      ]
+    },
+    "Quote": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "start_ms": {
+          "type": "integer"
+        },
+        "end_ms": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "id",
+        "text"
+      ]
+    },
+    "QuoteResult": {
+      "properties": {
+        "quote": {
+          "$ref": "#/$defs/Quote"
+        },
+        "located": {
+          "$ref": "#/$defs/Span"
+        },
+        "clip_start_ms": {
+          "type": "integer"
+        },
+        "clip_end_ms": {
+          "type": "integer"
+        },
+        "comparison": {
+          "$ref": "#/$defs/Comparison"
+        },
+        "widened": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "quote",
+        "clip_start_ms",
+        "clip_end_ms",
+        "comparison"
+      ]
+    },
+    "Report": {
+      "properties": {
+        "tool": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "audio": {
+          "$ref": "#/$defs/AudioInfo"
+        },
+        "index": {
+          "type": "string"
+        },
+        "engines": {
+          "items": {
+            "$ref": "#/$defs/EngineInfo"
+          },
+          "type": "array"
+        },
+        "options": {
+          "$ref": "#/$defs/Options"
+        },
+        "min_engines": {
+          "type": "integer"
+        },
+        "results": {
+          "items": {
+            "$ref": "#/$defs/QuoteResult"
+          },
+          "type": "array"
+        },
+        "counts": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "tool",
+        "created_at",
+        "audio",
+        "engines",
+        "options",
+        "min_engines",
+        "results",
+        "counts"
+      ]
+    },
+    "Span": {
+      "properties": {
+        "start_ms": {
+          "type": "integer"
+        },
+        "end_ms": {
+          "type": "integer"
+        },
+        "first_word": {
+          "type": "integer"
+        },
+        "last_word": {
+          "type": "integer"
+        },
+        "score": {
+          "type": "number"
+        },
+        "heard": {
+          "type": "string"
+        },
+        "missing_start": {
+          "type": "integer"
+        },
+        "missing_end": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "start_ms",
+        "end_ms",
+        "first_word",
+        "last_word",
+        "score",
+        "heard"
+      ]
+    }
+  },
+  "title": "OmniVoice verify report",
+  "description": "Quotes checked against a recording by comparing what several speech-to-text engines heard."
+}

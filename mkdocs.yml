@@ -51,6 +51,7 @@ nav:
       - Local TTS/STT Providers: guides/local-tts.md
       - Terminology (Pronunciation & Case): guides/terminology.md
       - Transcript Format: guides/transcript.md
+      - Verifying Wording Against Audio: guides/verify.md
       - Testing with Mocks: guides/testing.md
       - Observability: guides/observability.md
       - Provider Registry: guides/registry.md
@@ -72,6 +73,7 @@ nav:
           - Roadmap: specs/features/local/ROADMAP.md
   - Changelog: changelog.md
   - Releases:
+      - v0.20.0: releases/v0.20.0.md
       - v0.19.0: releases/v0.19.0.md
       - v0.18.0: releases/v0.18.0.md
       - v0.17.0: releases/v0.17.0.md

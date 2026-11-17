@@ -1,0 +1,2 @@
+# Schemas are embedded with go:embed; keep them byte-identical on every platform.
+schema/*.json text eol=lf
