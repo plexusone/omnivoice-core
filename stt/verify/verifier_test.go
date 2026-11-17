@@ -135,8 +135,9 @@ func TestVerifyQuoteWidensForMissingEdges(t *testing.T) {
 	if r.Widened == 0 || len(clips) < 2 || r.Comparison.MissingEnd != 0 {
 		t.Fatalf("widened %d clips %v comparison %+v", r.Widened, clips, r.Comparison)
 	}
-	if r.Comparison.Decision != DecisionCorrected { // "who are" is an extra function-word run; "doing testing" heard
-		t.Logf("decision %s", r.Comparison.Decision)
+	// "who are" is a run of extra function words all engines heard.
+	if r.Comparison.Decision != DecisionCorrected {
+		t.Errorf("decision %s, want corrected", r.Comparison.Decision)
 	}
 }
 
@@ -173,5 +174,26 @@ func TestSearch(t *testing.T) {
 	r = Search(ts, []string{"catch integration bugs"}, AbsenceOptions{})
 	if r.Phrases[0].FoundIn != 2 {
 		t.Errorf("found in %d, want 2", r.Phrases[0].FoundIn)
+	}
+}
+
+func TestTranscribeAllClearsConfiguredKeywordsOnPlainEngine(t *testing.T) {
+	var got []string
+	e := Engine{Name: "plain", NoKeywords: true,
+		Provider: fakeProvider{name: "plain", text: "x", keywords: &got},
+		Config:   stt.TranscriptionConfig{Keywords: []string{"Configured"}}}
+	if _, err := TranscribeAll(context.Background(), []Engine{e}, nil, []string{"Mantle"}); err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 0 {
+		t.Errorf("plain engine received key words %v", got)
+	}
+}
+
+func TestVerifyQuoteNotFoundHasEmptyEngines(t *testing.T) {
+	v := Verifier{Engines: []Engine{engine("a", "x")}}
+	r := v.VerifyQuote(context.Background(), "x.mp3", words("nothing like it", time.Second), Quote{ID: "q", Text: "we rewrote everything in a month"})
+	if r.Comparison.Decision != DecisionNotFound || r.Comparison.Engines == nil {
+		t.Errorf("result %+v", r.Comparison)
 	}
 }

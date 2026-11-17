@@ -283,3 +283,82 @@ func TestLocateMissingEdges(t *testing.T) {
 		t.Errorf("span ends early at word %d with nothing reported missing", span.LastWord)
 	}
 }
+
+// Regression cases from review.
+
+func TestAlignInsertionRunAfterMatch(t *testing.T) {
+	ref := Normalize("cat end", NormalizeOptions{})
+	hyp := Normalize("cat cats junk end", NormalizeOptions{})
+	if _, edits := AlignWithin(ref, hyp); edits != 1 {
+		t.Errorf("edits %d, want one insertion run", edits)
+	}
+}
+
+func TestNumberNormalizationEdges(t *testing.T) {
+	for in, want := range map[string]string{
+		"use two and three bolts": "use 2 and 3 bolts",
+		"one hundred and five":    "105",
+		"two thousand and ten":    "2010",
+		"it fell to -5 degrees":   "it fell to -5 degrees",
+		"a well-known -5% drop":   "a well known -5 percent drop",
+	} {
+		if got := texts(Normalize(in, NormalizeOptions{})); got != want {
+			t.Errorf("Normalize(%q) = %q, want %q", in, got, want)
+		}
+	}
+	toks := Normalize("twenty five red cars", NormalizeOptions{})
+	if toks[0].Text != "25" || toks[0].Orig != "twenty five" || toks[0].Kind != KindNumber {
+		t.Errorf("number token %+v", toks[0])
+	}
+}
+
+func TestCompareNegativeNumber(t *testing.T) {
+	c := Compare("it fell to -5 degrees", hearings("it fell to 5 degrees", "it fell to 5 degrees", "it fell to 5 degrees"), CompareOptions{})
+	if c.Decision == DecisionAgreed {
+		t.Errorf("-5 heard as 5 was agreed")
+	}
+}
+
+func TestCompareKeepsNumberPhraseInCorrection(t *testing.T) {
+	c := Compare("twenty five red cars", hearings("25 blue cars", "25 blue cars", "25 blue cars"), CompareOptions{})
+	if c.Decision != DecisionCorrected || c.Corrected != "twenty five blue cars" {
+		t.Errorf("decision %s corrected %q", c.Decision, c.Corrected)
+	}
+}
+
+func TestCompareCorrectsInsideContraction(t *testing.T) {
+	c := Compare("we don't ship", hearings("we do ship", "we do ship", "we do ship"), CompareOptions{})
+	if c.Decision != DecisionCorrected || c.Corrected != "we do ship" {
+		t.Errorf("decision %s corrected %q", c.Decision, c.Corrected)
+	}
+}
+
+func TestCompareNoMajorityOnFunctionWordIsDisputed(t *testing.T) {
+	c := Compare("we run tests", hearings("they run tests", "you run tests", "i run tests"), CompareOptions{})
+	if c.Decision != DecisionDisputed {
+		t.Errorf("decision %s, want disputed", c.Decision)
+	}
+}
+
+func TestCompareDuplicateEngineNamesKeepEveryVote(t *testing.T) {
+	hs := []Hearing{{Engine: "openai", Text: "run 35 tests"}, {Engine: "openai", Text: "run 35 tests"}, {Engine: "openai", Text: "run 25 tests"}}
+	c := Compare("run 25 tests", hs, CompareOptions{})
+	if c.Decision == DecisionAgreed {
+		t.Errorf("two of three engines heard 35, but the result was agreed")
+	}
+}
+
+func TestCompareNotFoundHasEmptyEngines(t *testing.T) {
+	c := Compare("", nil, CompareOptions{MinEngines: 1})
+	if c.Engines == nil {
+		t.Error("engines is nil; reports would write null")
+	}
+}
+
+func TestLocateNumberAcrossWords(t *testing.T) {
+	ws := words("we used twenty five bolts today", time.Second)
+	span, ok := Locate(ws, "we used twenty five bolts", NormalizeOptions{})
+	if !ok || span.Score != 1 || span.LastWord != 4 {
+		t.Errorf("span %+v", span)
+	}
+}
