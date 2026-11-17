@@ -34,7 +34,8 @@
         { "description": "Clips cut from generated audio, with header sizes checked", "commit": "3a132d7" },
         { "description": "Verifier with fake engines: key word rule, failed engines, clip widening, reports and absence search", "commit": "755b751" },
         { "description": "The committed verify report schema matches the Go types", "commit": "d768ec3" },
-        { "description": "The schema check compares content, so it passes on checkouts with CRLF line endings", "commit": "56d0549" }
+        { "description": "The schema check compares content, so it passes on checkouts with CRLF line endings", "commit": "56d0549" },
+        { "description": "Edge cases: insertion runs when retracing an alignment, numbers across words, signs and conjunctions, repeated engine names, function words with no majority, corrections inside contractions, and configured key words on a plain engine", "commit": "6f4ddc6" }
       ]
     },
     {
