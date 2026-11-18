@@ -133,14 +133,14 @@ func splitWords(text string) []rawWord {
 			continue
 		}
 		cut := strings.HasSuffix(strings.TrimRight(f, `"')],.;:!?`), "-")
-		parts := splitHyphens(f)
-		for k, h := range parts {
+		added := 0
+		for _, h := range splitHyphens(f) {
 			c := cleanWord(h)
 			if c == "" {
 				continue
 			}
 			end := strings.TrimRight(h, `"')]`)
-			w := rawWord{orig: h, clean: c, sentenceStart: start, cut: cut && k == len(parts)-1}
+			w := rawWord{orig: h, clean: c, sentenceStart: start}
 			last := ""
 			if end != "" {
 				last = end[len(end)-1:]
@@ -148,6 +148,12 @@ func splitWords(text string) []rawWord {
 			w.breakAfter = strings.ContainsAny(last, ",;:.!?")
 			start = strings.ContainsAny(last, ".!?")
 			out = append(out, w)
+			added++
+		}
+		// The broken-off part is the last one that survives cleaning: in
+		// "ha-," the comma is not a word.
+		if cut && added > 0 {
+			out[len(out)-1].cut = true
 		}
 	}
 	return out
@@ -332,6 +338,13 @@ func parseNumber(toks []Token, i int) (int, int, bool) {
 	}
 	j := i
 	for j < len(toks) {
+		// A broken-off word is not part of a number: "twenty five-" is 20.
+		if toks[j].cut {
+			if j == i {
+				return start, 0, false
+			}
+			break
+		}
 		w := toks[j].Text
 		switch {
 		case units[w] > 0 || w == "zero":

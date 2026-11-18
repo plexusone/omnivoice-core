@@ -64,7 +64,9 @@ func Locate(words []TimedWord, quote string, opts NormalizeOptions) (Span, bool)
 			raw = append(raw, rw)
 		}
 	}
-	hyp := normalizeWords(raw, opts)
+	// Reconcile word boundaries as Compare does, so a quoted "speed ups" is
+	// found where the transcript has "speedups".
+	hyp := joinSplitWords(normalizeWords(raw, opts), q)
 	pairs, dist := AlignWithin(q, hyp)
 	first, last := -1, -1
 	for _, p := range pairs {

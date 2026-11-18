@@ -429,24 +429,51 @@ func replaceSeq(toks, src, target []Token) []Token {
 //     "asynchronous". They are not joined when both are expected words on
 //     their own.
 //   - A heard token that spells two consecutive expected tokens is split, so
-//     "speedups" is compared as "speed ups".
+//     "speedups" is compared as "speed ups". It stays whole when it is an
+//     expected word itself, or when it spells two different expected pairs
+//     ("anice" for "an ice" and "a nice").
 //   - A word broken off as the speaker restarted ("ha-" before "heart") is
-//     dropped unless it is itself an expected word.
+//     dropped unless every token it yields is an expected word: "of-" can
+//     stand for a quoted "of", but "kinda-" is dropped whole. A broken-off
+//     word is never joined to another.
 func joinSplitWords(hyp, exp []Token) []Token {
 	want := map[string]Kind{}
 	for _, t := range exp {
 		want[t.Text] = t.Kind
 	}
 	split := map[string][2]Token{}
+	ambiguous := map[string]bool{}
 	for k := 0; k+1 < len(exp); k++ {
-		split[exp[k].Text+exp[k+1].Text] = [2]Token{exp[k], exp[k+1]}
+		key := exp[k].Text + exp[k+1].Text
+		if prev, ok := split[key]; ok && (prev[0].Text != exp[k].Text || prev[1].Text != exp[k+1].Text) {
+			ambiguous[key] = true
+		}
+		split[key] = [2]Token{exp[k], exp[k+1]}
 	}
-	var out []Token
-	for i := 0; i < len(hyp); i++ {
-		if hyp[i].cut && want[hyp[i].Text] == "" {
+	// A broken-off word is kept only if all its tokens are expected words.
+	keepCut := map[int]bool{}
+	for _, t := range hyp {
+		if !t.cut {
 			continue
 		}
-		if pair, ok := split[hyp[i].Text]; ok && want[hyp[i].Text] == "" {
+		if _, seen := keepCut[t.Word]; !seen {
+			keepCut[t.Word] = true
+		}
+		if want[t.Text] == "" {
+			keepCut[t.Word] = false
+		}
+	}
+	var kept []Token
+	for _, t := range hyp {
+		if t.cut && !keepCut[t.Word] {
+			continue
+		}
+		kept = append(kept, t)
+	}
+	hyp = kept
+	var out []Token
+	for i := 0; i < len(hyp); i++ {
+		if pair, ok := split[hyp[i].Text]; ok && want[hyp[i].Text] == "" && !ambiguous[hyp[i].Text] {
 			for _, e := range pair {
 				t := hyp[i]
 				t.Text, t.Kind = e.Text, e.Kind
@@ -457,9 +484,10 @@ func joinSplitWords(hyp, exp []Token) []Token {
 		if i+1 < len(hyp) {
 			joined := hyp[i].Text + hyp[i+1].Text
 			bothExpected := want[hyp[i].Text] != "" && want[hyp[i+1].Text] != ""
-			if k, ok := want[joined]; ok && !bothExpected {
+			if k, ok := want[joined]; ok && !bothExpected && !hyp[i].cut && !hyp[i+1].cut {
 				t := hyp[i]
 				t.Text, t.Kind = joined, k
+				t.end = hyp[i+1].end
 				out = append(out, t)
 				i++
 				continue
