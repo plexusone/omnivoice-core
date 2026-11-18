@@ -7,6 +7,25 @@
   "maintainers": ["grokify", "johncwang@gmail.com"],
   "releases": [
     {
+      "version": "v0.20.1",
+      "date": "2026-11-18",
+      "fixed": [
+        { "description": "`stt/verify`: informal spoken forms (\"gonna\", \"wanna\", \"gotta\", \"kinda\", \"sorta\", \"ok\") normalize to their standard words, so an engine writing \"going to\" agrees with one writing \"gonna\"", "commit": "578227b" },
+        { "description": "`stt/verify`: two heard words are joined when they spell a quoted word even if the first is also quoted (\"a synchronous\"), a heard word spelling two quoted words in a row is split (\"speedups\"), and a word broken off with a trailing hyphen (\"ha-\") is dropped unless it is quoted", "commit": "578227b" },
+        { "description": "`stt/verify`: a quotation with an elision (\"…\") matches the shortest stretch, so it can't run on to a later repeat of its last words and produce a clip longer than an engine accepts", "commit": "8e0b49f" }
+      ],
+      "dependencies": [
+        { "description": "Update module dependencies", "commit": "c7314c9" }
+      ],
+      "documentation": [
+        { "description": "Verify guide describes informal forms, word boundaries and elision costs", "commit": "9277ca5" },
+        { "description": "v0.20.1 release notes at `docs/releases/v0.20.1.md`" }
+      ],
+      "tests": [
+        { "description": "Regression tests for informal forms, joined, split and broken-off words, and elision spans", "commit": "9c8b946" }
+      ]
+    },
+    {
       "version": "v0.20.0",
       "date": "2026-11-17",
       "highlights": [

@@ -73,6 +73,7 @@ nav:
           - Roadmap: specs/features/local/ROADMAP.md
   - Changelog: changelog.md
   - Releases:
+      - v0.20.1: releases/v0.20.1.md
       - v0.20.0: releases/v0.20.0.md
       - v0.19.0: releases/v0.19.0.md
       - v0.18.0: releases/v0.18.0.md
