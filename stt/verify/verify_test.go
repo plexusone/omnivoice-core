@@ -135,8 +135,9 @@ func TestLocate(t *testing.T) {
 	if span.FirstWord != 13 || span.LastWord != len(ws)-1 {
 		t.Errorf("span words %d..%d", span.FirstWord, span.LastWord)
 	}
-	if span.Score <= 0.8 || span.Score >= 1 {
-		t.Errorf("score %v", span.Score)
+	// The quote's "work flow" is the transcript's "workflow", reconciled.
+	if span.Score != 1 {
+		t.Errorf("score %v, want 1", span.Score)
 	}
 	if span.Start.Duration() != 13*time.Second {
 		t.Errorf("start %v", span.Start)
@@ -433,6 +434,13 @@ func TestCompareKeepsCutWordThatIsQuoted(t *testing.T) {
 	if c.Decision != DecisionAgreed {
 		t.Errorf("decision %s, want agreed: %+v", c.Decision, c.Differences)
 	}
+	// The majority would carry "of" anyway, so check the engine that heard
+	// "of-" matched on its own.
+	for _, e := range c.Engines {
+		if e.Engine == "elevenlabs" && !e.Matches {
+			t.Errorf("elevenlabs heard \"of-\" but did not match")
+		}
+	}
 }
 
 func TestCompareSplitsWordHeardAsOne(t *testing.T) {
@@ -443,5 +451,72 @@ func TestCompareSplitsWordHeardAsOne(t *testing.T) {
 	), CompareOptions{})
 	if c.Decision != DecisionAgreed {
 		t.Errorf("decision %s, want agreed: %+v", c.Decision, c.Differences)
+	}
+}
+
+func TestAlignEmptyHypothesisLongReference(t *testing.T) {
+	// Enough deletions to pass the old unreachable-state cost; every
+	// reference token must still come back as a deletion.
+	ref := Normalize(strings.Repeat("word ", 420000), NormalizeOptions{})
+	pairs := Align(ref, nil)
+	if len(pairs) != len(ref) {
+		t.Fatalf("%d pairs, want %d", len(pairs), len(ref))
+	}
+	for _, p := range pairs {
+		if p.Op != OpDelete {
+			t.Fatalf("op %s, want delete", p.Op)
+		}
+	}
+}
+
+func TestLocateElisionPrefersCompleteMatchOverShorterApproximate(t *testing.T) {
+	// Fewer edits beat fewer skipped words: the exact "beta gamma" far away
+	// wins over the nearby misheard "beta gama".
+	text := "alpha beta gama " + strings.Repeat("zzz ", 400) + "beta gamma"
+	span, ok := Locate(words(text, time.Second), "alpha … beta gamma", NormalizeOptions{})
+	if !ok {
+		t.Fatal("not located")
+	}
+	if span.Score != 1 {
+		t.Errorf("score %v, want 1", span.Score)
+	}
+}
+
+func TestCompareCutWordHandling(t *testing.T) {
+	tests := []struct {
+		name, quote, heard string
+		agreed             bool
+	}{
+		{"broken-off word with comma", "I'm a builder at heart", "I'm a builder at ha-, heart", true},
+		{"broken-off informal form dropped whole", "we ran out of time", "we ran out kinda- time", false},
+		{"broken-off word not joined", "we use workflow daily", "we use work flow- daily", false},
+		{"broken-off number word", "we counted twenty birds", "we counted twenty five- birds", true},
+	}
+	for _, tt := range tests {
+		c := Compare(tt.quote, hearings(tt.quote, tt.heard, tt.quote), CompareOptions{})
+		matched := true
+		for _, e := range c.Engines {
+			if e.Engine == "elevenlabs" {
+				matched = e.Matches
+			}
+		}
+		if matched != tt.agreed {
+			t.Errorf("%s: elevenlabs matches = %v, want %v (%+v)", tt.name, matched, tt.agreed, c.Differences)
+		}
+	}
+}
+
+func TestCompareAmbiguousSplitStaysWhole(t *testing.T) {
+	// "anice" could be "an ice" or "a nice", so it is not split.
+	toks := joinSplitWords(Normalize("anice", NormalizeOptions{}), Normalize("an ice and a nice", NormalizeOptions{}))
+	if texts(toks) != "anice" {
+		t.Errorf("got %q, want anice", texts(toks))
+	}
+}
+
+func TestLocateReconcilesWordBoundaries(t *testing.T) {
+	span, ok := Locate(words("so check speedups now", time.Second), "check speed ups now", NormalizeOptions{})
+	if !ok || span.Score != 1 {
+		t.Errorf("located %v, score %v; want score 1", ok, span.Score)
 	}
 }
