@@ -29,12 +29,19 @@ type Pair struct {
 // "do"), as when a word is misheard, and more when they are not. Leaving out
 // a quoted word costs most, since the quotation's words are what is being
 // checked.
+//
+// Words heard across a marked elision cost costElided each: next to nothing,
+// so they never outweigh an edit, but enough that the shortest stretch wins
+// a tie. Without it, a quotation with an elision could match a stretch that
+// runs on to a later repeat of its last words, minutes away.
 const (
-	costSubSimilar = 6
-	costSub        = 14
-	costDel        = 20
-	costInsOpen    = 10
-	costInsExtend  = 3
+	costUnit       = 64
+	costSubSimilar = 6 * costUnit
+	costSub        = 14 * costUnit
+	costDel        = 20 * costUnit
+	costInsOpen    = 10 * costUnit
+	costInsExtend  = 3 * costUnit
+	costElided     = 1
 )
 
 // subCost is the cost of aligning reference word a with hypothesis word b.
@@ -127,7 +134,7 @@ func align(ref, hyp []Token, freeEnds bool) ([]Pair, int) {
 	}
 	insCost := func(i int, extend bool) int {
 		if i > 0 && ref[i-1].GapAfter {
-			return 0 // words heard across a marked elision are expected
+			return costElided // words heard across a marked elision are expected
 		}
 		if extend {
 			return costInsExtend
