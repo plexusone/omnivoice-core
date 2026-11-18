@@ -44,6 +44,9 @@ type Token struct {
 
 	// brk marks punctuation after the token, which ends a number phrase.
 	brk bool
+	// cut marks a word broken off as the speaker restarted, written with a
+	// trailing hyphen ("ha-" before "heart").
+	cut bool
 	// end is the index of the last original word the token came from; it
 	// differs from Word only for a number phrase spanning several words.
 	end int
@@ -89,7 +92,7 @@ func normalizeWords(words []rawWord, opts NormalizeOptions) []Token {
 			if !opts.KeepFillers && fillers[p] {
 				continue
 			}
-			toks = append(toks, Token{Text: p, Orig: w.orig, Word: w.src, end: w.src})
+			toks = append(toks, Token{Text: p, Orig: w.orig, Word: w.src, end: w.src, cut: w.cut})
 		}
 		if w.elision && len(toks) > 0 {
 			toks[len(toks)-1].GapAfter = true
@@ -110,6 +113,7 @@ type rawWord struct {
 	sentenceStart bool
 	breakAfter    bool
 	elision       bool
+	cut           bool
 }
 
 func splitWords(text string) []rawWord {
@@ -128,13 +132,15 @@ func splitWords(text string) []rawWord {
 			}
 			continue
 		}
-		for _, h := range splitHyphens(f) {
+		cut := strings.HasSuffix(strings.TrimRight(f, `"')],.;:!?`), "-")
+		parts := splitHyphens(f)
+		for k, h := range parts {
 			c := cleanWord(h)
 			if c == "" {
 				continue
 			}
 			end := strings.TrimRight(h, `"')]`)
-			w := rawWord{orig: h, clean: c, sentenceStart: start}
+			w := rawWord{orig: h, clean: c, sentenceStart: start, cut: cut && k == len(parts)-1}
 			last := ""
 			if end != "" {
 				last = end[len(end)-1:]
@@ -205,6 +211,10 @@ var contractions = map[string][]string{
 	"won't": {"will", "not"}, "can't": {"can", "not"}, "cannot": {"can", "not"},
 	"shan't": {"shall", "not"}, "ain't": {"is", "not"}, "let's": {"let", "us"},
 	"i'm": {"i", "am"},
+	// Informal spoken forms. Engines differ in whether they write what was
+	// said ("gonna") or the standard form ("going to").
+	"gonna": {"going", "to"}, "wanna": {"want", "to"}, "gotta": {"got", "to"},
+	"kinda": {"kind", "of"}, "sorta": {"sort", "of"}, "ok": {"okay"},
 }
 
 var isWords = map[string]bool{

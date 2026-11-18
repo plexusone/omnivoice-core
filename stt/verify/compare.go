@@ -421,20 +421,43 @@ func replaceSeq(toks, src, target []Token) []Token {
 	return out
 }
 
-// joinSplitWords joins two heard tokens when together they spell an expected
-// token, so "work flow" is compared as "workflow". The reverse, an expected
-// word heard as one, is handled the same way on the expected side by the
-// alignment's substitution.
+// joinSplitWords reconciles word boundaries between what was heard and what
+// was expected:
+//
+//   - Two heard tokens are joined when together they spell an expected
+//     token, so "work flow" is compared as "workflow" and "a synchronous" as
+//     "asynchronous". They are not joined when both are expected words on
+//     their own.
+//   - A heard token that spells two consecutive expected tokens is split, so
+//     "speedups" is compared as "speed ups".
+//   - A word broken off as the speaker restarted ("ha-" before "heart") is
+//     dropped unless it is itself an expected word.
 func joinSplitWords(hyp, exp []Token) []Token {
 	want := map[string]Kind{}
 	for _, t := range exp {
 		want[t.Text] = t.Kind
 	}
+	split := map[string][2]Token{}
+	for k := 0; k+1 < len(exp); k++ {
+		split[exp[k].Text+exp[k+1].Text] = [2]Token{exp[k], exp[k+1]}
+	}
 	var out []Token
 	for i := 0; i < len(hyp); i++ {
+		if hyp[i].cut && want[hyp[i].Text] == "" {
+			continue
+		}
+		if pair, ok := split[hyp[i].Text]; ok && want[hyp[i].Text] == "" {
+			for _, e := range pair {
+				t := hyp[i]
+				t.Text, t.Kind = e.Text, e.Kind
+				out = append(out, t)
+			}
+			continue
+		}
 		if i+1 < len(hyp) {
 			joined := hyp[i].Text + hyp[i+1].Text
-			if k, ok := want[joined]; ok && want[hyp[i].Text] == "" {
+			bothExpected := want[hyp[i].Text] != "" && want[hyp[i+1].Text] != ""
+			if k, ok := want[joined]; ok && !bothExpected {
 				t := hyp[i]
 				t.Text, t.Kind = joined, k
 				out = append(out, t)
