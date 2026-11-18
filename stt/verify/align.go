@@ -29,16 +29,26 @@ type Pair struct {
 // "do"), as when a word is misheard, and more when they are not. Leaving out
 // a quoted word costs most, since the quotation's words are what is being
 // checked.
+//
+// Words heard across a marked elision cost costElided each. Every other
+// cost is a multiple of costUnit, which is larger than any count of words,
+// so costs compare by edits first and by words skipped at elisions second:
+// skipped words never outweigh an edit, but among alignments with the same
+// edits the shortest stretch wins. Without that, a quotation with an elision
+// could match a stretch running on to a later repeat of its last words,
+// minutes away.
 const (
-	costSubSimilar = 6
-	costSub        = 14
-	costDel        = 20
-	costInsOpen    = 10
-	costInsExtend  = 3
+	costUnit       int64 = 1 << 32
+	costSubSimilar       = 6 * costUnit
+	costSub              = 14 * costUnit
+	costDel              = 20 * costUnit
+	costInsOpen          = 10 * costUnit
+	costInsExtend        = 3 * costUnit
+	costElided     int64 = 1
 )
 
 // subCost is the cost of aligning reference word a with hypothesis word b.
-func subCost(a, b string) int {
+func subCost(a, b string) int64 {
 	switch {
 	case a == b:
 		return 0
@@ -77,7 +87,7 @@ func charDistance(a, b []rune) int {
 			if a[i-1] == b[j-1] {
 				c = 0
 			}
-			cur[j] = min3(prev[j]+1, cur[j-1]+1, prev[j-1]+c)
+			cur[j] = min(prev[j]+1, cur[j-1]+1, prev[j-1]+c)
 		}
 		prev, cur = cur, prev
 	}
@@ -109,25 +119,27 @@ const (
 	stI        // last step inserted a hypothesis token
 )
 
-const inf = math.MaxInt32 / 4
+// inf marks an unreachable state. Reachable costs stay far below it: a
+// reference of a million tokens deleted outright costs under 2^57.
+const inf int64 = math.MaxInt64 / 4
 
 // align runs Gotoh's affine-gap alignment. With free ends, leading and
 // trailing hypothesis tokens cost nothing and are left out of the result.
 func align(ref, hyp []Token, freeEnds bool) ([]Pair, int) {
 	m, n := len(ref), len(hyp)
-	var t [3][][]int
+	var t [3][][]int64
 	for s := range t {
-		t[s] = make([][]int, m+1)
+		t[s] = make([][]int64, m+1)
 		for i := range t[s] {
-			t[s][i] = make([]int, n+1)
+			t[s][i] = make([]int64, n+1)
 			for j := range t[s][i] {
 				t[s][i][j] = inf
 			}
 		}
 	}
-	insCost := func(i int, extend bool) int {
+	insCost := func(i int, extend bool) int64 {
 		if i > 0 && ref[i-1].GapAfter {
-			return 0 // words heard across a marked elision are expected
+			return costElided // words heard across a marked elision are expected
 		}
 		if extend {
 			return costInsExtend
@@ -139,23 +151,23 @@ func align(ref, hyp []Token, freeEnds bool) ([]Pair, int) {
 		if freeEnds {
 			t[stM][0][j] = 0 // the stretch may start anywhere
 		} else {
-			t[stI][0][j] = minInt(t[stM][0][j-1]+insCost(0, false), t[stI][0][j-1]+insCost(0, true))
+			t[stI][0][j] = min(t[stM][0][j-1]+insCost(0, false), t[stI][0][j-1]+insCost(0, true))
 		}
 	}
 	for i := 1; i <= m; i++ {
-		t[stD][i][0] = minInt(t[stM][i-1][0], t[stD][i-1][0]) + costDel
+		t[stD][i][0] = min(t[stM][i-1][0], t[stD][i-1][0]) + costDel
 		for j := 1; j <= n; j++ {
 			sub := subCost(ref[i-1].Text, hyp[j-1].Text)
-			t[stM][i][j] = min3(t[stM][i-1][j-1], t[stD][i-1][j-1], t[stI][i-1][j-1]) + sub
-			t[stD][i][j] = min3(t[stM][i-1][j], t[stD][i-1][j], t[stI][i-1][j]) + costDel
-			t[stI][i][j] = min3(
+			t[stM][i][j] = min(t[stM][i-1][j-1], t[stD][i-1][j-1], t[stI][i-1][j-1]) + sub
+			t[stD][i][j] = min(t[stM][i-1][j], t[stD][i-1][j], t[stI][i-1][j]) + costDel
+			t[stI][i][j] = min(
 				t[stM][i][j-1]+insCost(i, false),
 				t[stI][i][j-1]+insCost(i, true),
 				t[stD][i][j-1]+insCost(i, false),
 			)
 		}
 	}
-	best := func(i, j int) (int, int) {
+	best := func(i, j int) (int, int64) {
 		st, v := stM, t[stM][i][j]
 		if t[stD][i][j] < v {
 			st, v = stD, t[stD][i][j]
@@ -191,19 +203,19 @@ func align(ref, hyp []Token, freeEnds bool) ([]Pair, int) {
 			rev = append(rev, Pair{Ref: i - 1, Hyp: j - 1, Op: op})
 			v := t[stM][i][j] - sub
 			i, j = i-1, j-1
-			st = prevState(t, i, j, v, [3]int{})
+			st = prevState(t, i, j, v, [3]int64{})
 		case stD:
 			rev = append(rev, Pair{Ref: i - 1, Hyp: -1, Op: OpDelete})
 			v := t[stD][i][j] - costDel
 			i--
-			st = prevState(t, i, j, v, [3]int{})
+			st = prevState(t, i, j, v, [3]int64{})
 		default:
 			rev = append(rev, Pair{Ref: -1, Hyp: j - 1, Op: OpInsert})
 			v := t[stI][i][j]
 			j--
 			// Step costs by state: from a match or a deletion an insertion
 			// opens a run; from an insertion it extends one.
-			st = prevState(t, i, j, v, [3]int{insCost(i, false), insCost(i, false), insCost(i, true)})
+			st = prevState(t, i, j, v, [3]int64{insCost(i, false), insCost(i, false), insCost(i, true)})
 		}
 	}
 	out := make([]Pair, len(rev))
@@ -215,7 +227,7 @@ func align(ref, hyp []Token, freeEnds bool) ([]Pair, int) {
 
 // prevState returns the state at (i, j) whose cost plus its step cost gives
 // v, preferring match, then delete, then insert.
-func prevState(t [3][][]int, i, j, v int, step [3]int) int {
+func prevState(t [3][][]int64, i, j int, v int64, step [3]int64) int {
 	for _, st := range []int{stM, stD, stI} {
 		if t[st][i][j] < inf && t[st][i][j]+step[st] == v {
 			return st
@@ -259,15 +271,4 @@ func countEdits(pairs []Pair, ref []Token) int {
 		}
 	}
 	return edits
-}
-
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func min3(a, b, c int) int {
-	return minInt(minInt(a, b), c)
 }

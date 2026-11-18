@@ -44,6 +44,9 @@ type Token struct {
 
 	// brk marks punctuation after the token, which ends a number phrase.
 	brk bool
+	// cut marks a word broken off as the speaker restarted, written with a
+	// trailing hyphen ("ha-" before "heart").
+	cut bool
 	// end is the index of the last original word the token came from; it
 	// differs from Word only for a number phrase spanning several words.
 	end int
@@ -89,7 +92,7 @@ func normalizeWords(words []rawWord, opts NormalizeOptions) []Token {
 			if !opts.KeepFillers && fillers[p] {
 				continue
 			}
-			toks = append(toks, Token{Text: p, Orig: w.orig, Word: w.src, end: w.src})
+			toks = append(toks, Token{Text: p, Orig: w.orig, Word: w.src, end: w.src, cut: w.cut})
 		}
 		if w.elision && len(toks) > 0 {
 			toks[len(toks)-1].GapAfter = true
@@ -110,6 +113,7 @@ type rawWord struct {
 	sentenceStart bool
 	breakAfter    bool
 	elision       bool
+	cut           bool
 }
 
 func splitWords(text string) []rawWord {
@@ -128,6 +132,8 @@ func splitWords(text string) []rawWord {
 			}
 			continue
 		}
+		cut := strings.HasSuffix(strings.TrimRight(f, `"')],.;:!?`), "-")
+		added := 0
 		for _, h := range splitHyphens(f) {
 			c := cleanWord(h)
 			if c == "" {
@@ -142,6 +148,12 @@ func splitWords(text string) []rawWord {
 			w.breakAfter = strings.ContainsAny(last, ",;:.!?")
 			start = strings.ContainsAny(last, ".!?")
 			out = append(out, w)
+			added++
+		}
+		// The broken-off part is the last one that survives cleaning: in
+		// "ha-," the comma is not a word.
+		if cut && added > 0 {
+			out[len(out)-1].cut = true
 		}
 	}
 	return out
@@ -205,6 +217,10 @@ var contractions = map[string][]string{
 	"won't": {"will", "not"}, "can't": {"can", "not"}, "cannot": {"can", "not"},
 	"shan't": {"shall", "not"}, "ain't": {"is", "not"}, "let's": {"let", "us"},
 	"i'm": {"i", "am"},
+	// Informal spoken forms. Engines differ in whether they write what was
+	// said ("gonna") or the standard form ("going to").
+	"gonna": {"going", "to"}, "wanna": {"want", "to"}, "gotta": {"got", "to"},
+	"kinda": {"kind", "of"}, "sorta": {"sort", "of"}, "ok": {"okay"},
 }
 
 var isWords = map[string]bool{
@@ -322,6 +338,13 @@ func parseNumber(toks []Token, i int) (int, int, bool) {
 	}
 	j := i
 	for j < len(toks) {
+		// A broken-off word is not part of a number: "twenty five-" is 20.
+		if toks[j].cut {
+			if j == i {
+				return start, 0, false
+			}
+			break
+		}
 		w := toks[j].Text
 		switch {
 		case units[w] > 0 || w == "zero":

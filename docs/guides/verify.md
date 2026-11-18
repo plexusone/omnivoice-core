@@ -21,7 +21,8 @@ they disagree on a word that matters, a person or a judge has to listen.
 3. **Hear.** Have every engine transcribe the clip at once.
 4. **Normalize.** Turn the quotation and each hearing into comparable
    tokens: lower case, no punctuation, contractions expanded ("don't" →
-   "do not"), number words as digits ("twenty five" → "25"), "%" as
+   "do not"), informal forms written out ("gonna" → "going to", "kinda" →
+   "kind of"), number words as digits ("twenty five" → "25"), "%" as
    "percent", and fillers such as "um" dropped.
 5. **Align.** Line up each hearing against the quotation word by word.
 6. **Decide** by fixed rules.
@@ -57,14 +58,30 @@ Alignment is Gotoh's affine-gap method, with costs chosen for quotations:
 
 - Words the speaker said that the quotation leaves out cost one edit to skip
   as a run, plus a little per word, because quotations often drop a phrase.
-  Words heard across a marked elision ("…") cost nothing.
+  Words heard across a marked elision ("…") don't count as edits. They only
+  break ties: among alignments with the same edits, the one skipping fewer
+  words wins, so a quotation with an elision isn't matched to a stretch
+  running on to a later repeat of its last words. A later exact match still
+  wins over a nearer match with a misheard word.
 - A misheard word costs less when the two words are spelled alike ("doing"
   and "do") than when they are not.
 - Leaving out a quoted word costs most, because the quotation's words are
   what is being checked.
-- A word said twice in a row ("to, to build") is a stutter and is ignored,
-  and a word an engine splits in two ("work flow") is joined when that
-  spells a quoted word.
+- A word said twice in a row ("to, to build") is a stutter and is ignored.
+- A word an engine splits in two ("work flow", "a synchronous") is joined
+  when that spells a quoted word, and a word an engine runs together
+  ("speedups") is split when it spells two quoted words in a row. A run-
+  together word stays whole when it is itself a quoted word, or when it
+  could split two ways ("anice" in a quotation with both "an ice" and
+  "a nice").
+- A word broken off as the speaker restarted, which engines write with a
+  trailing hyphen ("ha- at heart"), is dropped unless every token it yields
+  is a quoted word: "of-" can stand for a quoted "of", but "kinda-" is
+  dropped whole. A broken-off word is never joined to another word or
+  counted as part of a number.
+- Locating a quotation in the timed transcript applies the same word
+  boundary rules, so a quoted "speed ups" is found where the transcript has
+  "speedups".
 
 When no engine hears the quotation's first or last words, they may lie just
 outside the clip. The verifier widens that edge and listens again, up to two
