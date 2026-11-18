@@ -29,6 +29,7 @@ func TestNormalize(t *testing.T) {
 		{"the team's energy", "the team energy"},
 		{"won't, can't, cannot", "will not can not can not"},
 		{"agentic — coding… later", "agentic coding later"},
+		{"you're gonna, kinda, OK", "you are going to kind of okay"},
 	}
 	for _, tt := range tests {
 		if got := texts(Normalize(tt.in, NormalizeOptions{})); got != tt.want {
@@ -360,5 +361,87 @@ func TestLocateNumberAcrossWords(t *testing.T) {
 	span, ok := Locate(ws, "we used twenty five bolts", NormalizeOptions{})
 	if !ok || span.Score != 1 || span.LastWord != 4 {
 		t.Errorf("span %+v", span)
+	}
+}
+
+func TestCompareInformalFormsAgree(t *testing.T) {
+	c := Compare("you're gonna have a lot more bugs", hearings(
+		"you're gonna have a lot more bugs",
+		"you're gonna have a lot more bugs",
+		"you're going to have a lot more bugs",
+	), CompareOptions{})
+	if c.Decision != DecisionAgreed {
+		t.Errorf("decision %s, want agreed: %+v", c.Decision, c.Differences)
+	}
+}
+
+func TestCompareJoinsSplitWordAfterExpectedWord(t *testing.T) {
+	// "a" is also in the quote, but "synchronous" is not, so the two heard
+	// words are joined.
+	c := Compare("a surprise is that asynchronous nature", hearings(
+		"a surprise is that asynchronous nature",
+		"a surprise is that asynchronous nature",
+		"a surprise is that a synchronous nature",
+	), CompareOptions{})
+	if c.Decision != DecisionAgreed {
+		t.Errorf("decision %s, want agreed: %+v", c.Decision, c.Differences)
+	}
+}
+
+func TestCompareKeepsTwoExpectedWordsApart(t *testing.T) {
+	// "any" and "way" are both quoted words, so a hearing of "any way" is not
+	// joined into "anyway".
+	c := Compare("anyway any way", hearings("anyway any way", "anyway any way", "anyway any way"), CompareOptions{})
+	if c.Decision != DecisionAgreed {
+		t.Errorf("decision %s, want agreed", c.Decision)
+	}
+}
+
+func TestLocateElisionPrefersShortestStretch(t *testing.T) {
+	// The quote's last word is said again much later. Words skipped at the
+	// elision must not let the match run on to that later repeat.
+	text := "it was more as a gimmick rather than something that would make me more more effective " +
+		strings.Repeat("filler words go here ", 50) + "and that was effective"
+	ws := words(text, time.Second)
+	span, ok := Locate(ws, "more as … a gimmick rather than something that would make me more … effective", NormalizeOptions{})
+	if !ok {
+		t.Fatal("not located")
+	}
+	if span.FirstWord != 2 || span.LastWord != 15 {
+		t.Errorf("span words %d..%d, want 2..15", span.FirstWord, span.LastWord)
+	}
+}
+
+func TestCompareDropsCutWord(t *testing.T) {
+	c := Compare("I'm a builder at heart", hearings(
+		"I'm a builder at heart",
+		"I'm a builder at ha- at heart",
+		"I'm a builder at heart",
+	), CompareOptions{})
+	if c.Decision != DecisionAgreed {
+		t.Errorf("decision %s, want agreed: %+v", c.Decision, c.Differences)
+	}
+}
+
+func TestCompareKeepsCutWordThatIsQuoted(t *testing.T) {
+	// "of-" is broken off, but "of" is a quoted word, so it still counts.
+	c := Compare("it might run out of context", hearings(
+		"it might run out of context",
+		"it might run out of- context",
+		"it might run out of context",
+	), CompareOptions{})
+	if c.Decision != DecisionAgreed {
+		t.Errorf("decision %s, want agreed: %+v", c.Decision, c.Differences)
+	}
+}
+
+func TestCompareSplitsWordHeardAsOne(t *testing.T) {
+	c := Compare("you're not getting quite the speed ups", hearings(
+		"you're not getting quite the speed ups",
+		"you're not getting quite the speed ups",
+		"you're not getting quite the speedups",
+	), CompareOptions{})
+	if c.Decision != DecisionAgreed {
+		t.Errorf("decision %s, want agreed: %+v", c.Decision, c.Differences)
 	}
 }
